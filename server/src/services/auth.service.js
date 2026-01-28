@@ -30,7 +30,7 @@ class AuthService {
     // Tìm user
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      const error = new Error('Incorrect email or password');
+      const error = new Error('User not found');
       error.statusCode = 401;
       throw error;
     }
