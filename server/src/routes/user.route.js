@@ -8,6 +8,7 @@ const { protect } = require('../middlewares/auth.middleware');
 router.use(protect);
 
 router.get('/profile', userController.getProfile);
-//router.put('/profile', userController.updateProfile);
+router.put('/profile', userController.updateProfile);
+router.get('/nearby', userController.getNearbyUsers);
 
 module.exports = router;
