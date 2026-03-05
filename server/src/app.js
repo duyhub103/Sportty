@@ -12,6 +12,7 @@ const errorMiddleware = require('./middlewares/error.middleware');
 // import routes
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
+const swipeRoutes = require('./routes/swipe.route');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(responseMiddleware);
 app.get('/', (req, res) => res.send('Sportty API is running...'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/swipes', swipeRoutes);
 
 // Error Handling (cuối cùng)
 app.use(errorMiddleware);

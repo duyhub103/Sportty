@@ -1,4 +1,5 @@
 // src/services/user.service.js
+const swipeRepository = require('../repositories/swipe.repository');
 const userRepository = require('../repositories/user.repository');
 
 class UserService {
@@ -37,12 +38,20 @@ class UserService {
         const longitude = parseFloat(long);
         const latitude = parseFloat(lat);
 
+        // lấy danh sách những user hiện tại đã quẹt (LIKE/DISLIKE) để loại trừ
+        const swipedIds = await swipeRepository.getSwipedIds(currentUserId);
+
         // lấy danh sách
         const users = await userRepository.findNearby(longitude, latitude, maxDistanceMeters, sport);
 
         // bỏ bản thân khỏi list
+        // bỏ user trong swipedIds
         // users trả về từ aggregate là array object thuần, id là objectId
-        return users.filter(u => u._id.toString() !== currentUserId);
+        const filteredUsers = users.filter(u => {
+            const userIdStr = u._id.toString();
+            return userIdStr !== currentUserId && !swipedIds.includes(userIdStr);
+        });
+        return filteredUsers;
     }
 
 }
