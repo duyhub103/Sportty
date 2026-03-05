@@ -16,6 +16,12 @@ class MatchRepository {
             // lastMessage mặc định là rỗng
         });
     }
+
+    async getUserMatches(userId) {
+        return await Match.find({ users: userId })
+        .populate('users', 'fullName displayName avatar') // populate Tự động móc sang bảng User để lấy tên và avatar, không lấy password
+        .sort({ updatedAt: -1 }); // chat gần nhất đưa lên đầu
+    }
 }
 
 module.exports = new MatchRepository();

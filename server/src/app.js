@@ -13,6 +13,7 @@ const errorMiddleware = require('./middlewares/error.middleware');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const swipeRoutes = require('./routes/swipe.route');
+const chatRoutes = require('./routes/chat.route');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/', (req, res) => res.send('Sportty API is running...'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/swipes', swipeRoutes);
+app.use('/api', chatRoutes); // URL sẽ tự động thành /api/matches và /api/messages/:matchId
 
 // Error Handling (cuối cùng)
 app.use(errorMiddleware);
