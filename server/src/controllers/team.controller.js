@@ -1,0 +1,62 @@
+const teamService = require('../services/team.service');
+const asyncHandler = require('../utils/asyncHandler');
+const { TeamResponseDTO } = require('../_dtos/team.dto');
+
+class TeamController {
+    // POST /api/teams (Tạo đội mới)
+    createTeam = asyncHandler(async (req, res) => {
+        const userId = req.user.id; // Lấy ID của người tạo từ Token
+        
+        const team = await teamService.createTeam(userId, req.body);
+        
+        // Trả về data đã qua DTO
+        res.success(new TeamResponseDTO(team), 'Team created successfully', 201);
+    });
+
+    // GET /api/teams (Lấy danh sách đội có bộ lọc)
+    getTeams = asyncHandler(async (req, res) => {
+        const filter = {
+            sport: req.query.sport,
+            keyword: req.query.keyword
+        };
+        
+        const teams = await teamService.getTeams(filter);
+        const result = teams.map(t => new TeamResponseDTO(t));
+        
+        res.success(result, 'Get teams successfully');
+    });
+
+    // GET /api/teams/:id (Xem chi tiết 1 đội)
+    getTeamById = asyncHandler(async (req, res) => {
+        const team = await teamService.getTeamById(req.params.id);
+        res.success(new TeamResponseDTO(team), 'Get team details successfully');
+    });
+
+    // POST /api/teams/:id/join (yêu cầu tham gia đội)
+    requestToJoin = asyncHandler(async (req, res) => {
+        const userId = req.user.id; // Người đang bấm nút "Xin vào"
+        
+        const result = await teamService.requestToJoin(req.params.id, userId);
+        
+        res.success(null, result.message);
+    });
+
+    // PUT /api/teams/:id/requests (Đội trưởng duyệt/từ chối)
+    handleJoinRequest = asyncHandler(async (req, res) => {
+        const actionUserId = req.user.id; // ID của Đội trưởng (từ Token)
+        const teamId = req.params.id;
+        const { targetUserId, action } = req.body; // Bắn lên từ App Flutter
+        
+        if (!targetUserId || !action) {
+            const error = new Error('targetUserId and action (APPROVE/REJECT) are required');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const result = await teamService.handleJoinRequest(teamId, actionUserId, targetUserId, action.toUpperCase());
+        
+        res.success(null, result.message);
+    });
+}
+
+module.exports = new TeamController();

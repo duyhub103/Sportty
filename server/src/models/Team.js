@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const teamSchema = new Schema({
     name: { type: String, required: true },
+    pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     captainId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     sport: { type: String, required: true },
     description: { type: String },
