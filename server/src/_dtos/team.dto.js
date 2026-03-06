@@ -10,6 +10,10 @@ class TeamResponseDTO{
         this.fund = team.fund || 0; // Quỹ đội
         this.captainId = team.captainId;
         this.location = team.location; // Tọa độ hoạt động
+        
+        this.lastMessage = team.lastMessage || '';
+        this.lastMessageTime = team.lastMessageTime || null;
+
         this.createdAt = team.createdAt;
 
         // lọc thông tin nhạy cảm

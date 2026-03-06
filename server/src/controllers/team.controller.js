@@ -1,6 +1,8 @@
 const teamService = require('../services/team.service');
 const asyncHandler = require('../utils/asyncHandler');
 const { TeamResponseDTO } = require('../_dtos/team.dto');
+const messageService = require('../services/message.service');
+const { MessageResponseDTO } = require('../_dtos/chat.dto');
 
 class TeamController {
     // POST /api/teams (Tạo đội mới)
@@ -56,6 +58,21 @@ class TeamController {
         const result = await teamService.handleJoinRequest(teamId, actionUserId, targetUserId, action.toUpperCase());
         
         res.success(null, result.message);
+    });
+
+    // GET /api/teams/:id/messages?page=1&limit=20 (Lấy tin nhắn của đội)
+    getTeamMessages = asyncHandler(async (req, res) => {
+        const teamId = req.params.id;
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+
+        const messages = await messageService.getTeamMessages(teamId, userId, page, limit);
+        
+        // Bọc dữ liệu qua DTO để format lại giao diện
+        const result = messages.map(msg => new MessageResponseDTO(msg));
+        
+        res.success(result, 'Get team messages successfully');
     });
 }
 

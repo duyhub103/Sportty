@@ -1,6 +1,8 @@
 const messageRepository = require('../repositories/message.repository');
 const matchRepository = require('../repositories/match.repository'); // Gọi chéo để check quyền
 
+const teamRepository = require('../repositories/team.repository');
+
 class MessageService {
     async getMatchMessages(userId, matchId, page = 1, limit = 20) {
         // check quyền truy cập phòng chat của user
@@ -20,6 +22,31 @@ class MessageService {
         // Lấy tin nhắn
         const messages = await messageRepository.getMessagesByMatchId(matchId, skip, limit);
         return messages;
+    }
+
+    async getTeamMessages(teamId, userId, page = 1, limit = 20) {
+        // check team tồn tại
+        const team = await teamRepository.getTeamById(teamId);
+        if (!team) {
+            const error = new Error('Team not found');
+            error.statusCode = 404;
+            // format lỗi trả về cho client dễ xử lý
+            error.errors = { code: 'TEAM_NOT_FOUND', details: 'Không tìm thấy đội bóng này' }; 
+            throw error;
+        }
+
+        // check user có phải là thành viên của đội không
+        const isMember = team.members.find(m => m.userId?._id.toString() === userId.toString());
+        if (!isMember) {
+            const error = new Error('Permission denied');
+            error.statusCode = 403;
+            error.errors = { code: 'NOT_TEAM_MEMBER', details: 'Bạn phải là thành viên mới được xem tin nhắn' };
+            throw error;
+        }
+
+        // Phân trang và lấy dữ liệu
+        const skip = (page - 1) * limit;
+        return await messageRepository.getTeamMessages(teamId, skip, limit);
     }
 }
 

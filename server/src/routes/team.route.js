@@ -13,6 +13,7 @@ router.get('/', teamController.getTeams);                   // Tìm đội
 router.get('/:id', teamController.getTeamById);             // Xem chi tiết đội
 router.post('/:id/join', teamController.requestToJoin);     // Xin gia nhập
 router.put('/:id/requests', teamController.handleJoinRequest); // Duyệt yêu cầu
+router.get('/:id/messages', teamController.getTeamMessages); // Lấy tin nhắn của đội
 
 // Các route liên quan đến Bảng tin (Activities), đặt route này trong team.route vì nó có liên quan đến teamId
 router.post('/:id/activities', activityController.createActivity); // :id ở đây chính là teamId

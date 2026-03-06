@@ -10,6 +10,10 @@ const teamSchema = new Schema({
     avatar: { type: String, default: '' },
     // CẬP NHẬT: Thêm quản lý quỹ
     fund: { type: Number, default: 0 }, 
+
+    lastMessage: { type: String, default: '' },
+    lastMessageTime: { type: Date, default: null },
+    
     members: [{
         userId: { type: Schema.Types.ObjectId, ref: 'User' },
         role: { type: String, enum: ['MEMBER', 'VICE_CAPTAIN'], default: 'MEMBER' },
