@@ -74,6 +74,23 @@ class TeamController {
         
         res.success(result, 'Get team messages successfully');
     });
+
+    // PUT /api/teams/:id/fund (Cập nhật quỹ đội)
+    updateTeamFund = asyncHandler(async (req, res) => {
+        const actionUserId = req.user.id;
+        const teamId = req.params.id;
+        const { amount } = req.body; // Gửi lên từ Client (VD: 500000 hoặc -150000)
+
+        const updatedTeam = await teamService.updateTeamFund(teamId, actionUserId, amount);
+        
+        res.success(new TeamResponseDTO(updatedTeam), 'Team fund updated successfully');
+
+        // có thể chỉ trả về id và số tiền
+        // res.success({ 
+        // teamId: updatedTeam._id, 
+        // currentFund: updatedTeam.fund 
+        // }, 'Team fund updated successfully');
+    });
 }
 
 module.exports = new TeamController();

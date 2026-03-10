@@ -83,6 +83,32 @@ class TeamService {
             throw Object.assign(new Error('Invalid action. Must be APPROVE or REJECT'), { statusCode: 400 });
         }
     }
+
+    // cập nhật quỹ đội
+    async updateTeamFund(teamId, actionUserId, amount) {
+        const team = await this.getTeamById(teamId);
+        
+        // check quyền captain hoặc vice-captain
+        const isCaptain = team.captainId.toString() === actionUserId.toString();
+        const actionUserInMembers = team.members.find(m => m.userId?._id.toString() === actionUserId.toString());
+        const isViceCaptain = actionUserInMembers && actionUserInMembers.role === 'VICE_CAPTAIN';
+
+        if (!isCaptain && !isViceCaptain) {
+            const error = new Error('Only Captain or Vice Captain can manage team funds');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        // check amount phải là số (âm là trừ tiền, dương là cộng tiền)
+        if (typeof amount !== 'number' || isNaN(amount)) {
+            const error = new Error('Invalid amount');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // Cập nhật quỹ đội
+        return await teamRepository.updateFund(teamId, amount);
+    }
 }
 
 module.exports = new TeamService();
