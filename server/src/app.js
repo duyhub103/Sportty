@@ -16,6 +16,7 @@ const swipeRoutes = require('./routes/swipe.route');
 const chatRoutes = require('./routes/chat.route');
 const teamRoutes = require('./routes/team.route');
 const activityRoutes = require('./routes/activity.route');
+const notificationRoutes = require('./routes/notification.route');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/swipes', swipeRoutes);
 app.use('/api', chatRoutes); // URL sẽ tự động thành /api/matches và /api/messages/:matchId
 app.use('/api/teams', teamRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error Handling (cuối cùng)
 app.use(errorMiddleware);

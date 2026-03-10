@@ -83,6 +83,11 @@ module.exports = (io) => {
             }
         });
 
+        socket.on('join_notification', (userId) => {
+            socket.join(userId); // User vào phòng mang tên ID của chính mình
+            console.log(`🔔 Socket ${socket.id} đã bật chuông cho User: ${userId}`);
+        });
+
         // Khi User thoát app
         socket.on('disconnect', () => {
             console.log('🔴 Một user đã ngắt kết nối:', socket.id);

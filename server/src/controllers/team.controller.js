@@ -3,6 +3,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { TeamResponseDTO } = require('../_dtos/team.dto');
 const messageService = require('../services/message.service');
 const { MessageResponseDTO } = require('../_dtos/chat.dto');
+const notificationService = require('../services/notification.service');
 
 class TeamController {
     // POST /api/teams (Tạo đội mới)
@@ -37,10 +38,29 @@ class TeamController {
     // POST /api/teams/:id/join (yêu cầu tham gia đội)
     requestToJoin = asyncHandler(async (req, res) => {
         const userId = req.user.id; // Người đang bấm nút "Xin vào"
+        const teamId = req.params.id;
         
-        const result = await teamService.requestToJoin(req.params.id, userId);
-        
-        res.success(null, result.message);
+        await teamService.requestToJoin(teamId, userId);
+
+        // bắn thông báo cho đội trưởng biết có người xin vào
+        try {
+            const team = await teamService.getTeamById(teamId);
+            
+            // Lấy cái loa io setup trong server.js ra
+            const io = req.app.get('io'); 
+
+            await notificationService.createAndSendNotification({
+                recipientId: team.captainId, // Nhắm vào ID của ông Đội trưởng
+                senderId: userId,            // người xin vào
+                type: 'TEAM_INVITE',
+                content: `Có một thành viên mới vừa xin gia nhập đội ${team.name} của bạn.`,
+                relatedId: team._id          // Gắn ID đội vào để App Flutter làm nút Bấm chuyển trang
+            }, io);
+        } catch (notifError) {
+            console.error('Lỗi khi gửi Notification:', notifError);
+        }
+
+        res.success(null, 'Join request sent successfully');
     });
 
     // PUT /api/teams/:id/requests (Đội trưởng duyệt/từ chối)

@@ -15,9 +15,12 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: '*', // cho phép flutter kết nối tới
-        methods: ['GET', 'POST']
+        methods: ["GET", "POST", "PUT", "DELETE"]
     }
 });
+
+// Ép biến io vào biến app toàn cục để bất kỳ file Controller/Service nào cũng gọi được
+app.set('io', io);
 
 // Khởi động logic Socket
 setupSocket(io);
