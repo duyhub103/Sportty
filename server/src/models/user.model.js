@@ -5,7 +5,7 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     fullName: { type: String, required: true },
-    dispLayName: {type: String },
+    displayName: {type: String },
     bio: { type: String, default: '' },
     avatar: { type: String, default: '' },
     gallery: [{ type: String }], // Mảng URL hình ảnh

@@ -22,8 +22,24 @@ class UserController {
   updateProfile = asyncHandler(async (req, res) => {
         const userId = req.user.id;
         // req.body chứa: { displayName, bio, sports, gallery, long, lat ... }
+
+        const updateData = { ...req.body }; // tạo object chứa data cập nhật từ body
+
+        // check có file upload
+        if (req.files) {
+            // Nếu có up avatar thì lấy URL do Cloudinary trả về
+            if (req.files['avatar'] && req.files['avatar'].length > 0) {
+                updateData.avatar = req.files['avatar'][0].path;
+            }
+            
+            // Nếu có up gallery thì tạo mảng chứa các URL
+            if (req.files['gallery'] && req.files['gallery'].length > 0) {
+                updateData.gallery = req.files['gallery'].map(file => file.path);
+            }
+        }
+
         
-        const updatedUser = await userService.updateProfile(userId, req.body);
+        const updatedUser = await userService.updateProfile(userId, updateData);
         
         const userDTO = new UserResponse(updatedUser);
         res.success(userDTO, 'Profile updated successfully');
