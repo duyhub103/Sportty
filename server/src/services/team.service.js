@@ -147,6 +147,26 @@ class TeamService {
         // Cập nhật quỹ đội
         return await teamRepository.updateFund(teamId, amount);
     }
+
+    // Cập nhật Avatar cho đội bóng
+    async updateTeamAvatar(teamId, actionUserId, avatarUrl) {
+        const team = await this.getTeamById(teamId);
+
+        // check quyền
+        const isCaptain = team.captainId.toString() === actionUserId.toString();
+        const actionUserInMembers = team.members.find(m => m.userId?._id.toString() === actionUserId.toString());
+        const isViceCaptain = actionUserInMembers && actionUserInMembers.role === 'VICE_CAPTAIN';
+
+        if (!isCaptain && !isViceCaptain) {
+            const error = new Error('Only Captain or Vice Captain can update team avatar');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        // Gọi Repository để lưu link ảnh mới vào db
+        return await teamRepository.updateTeam(teamId, { avatar: avatarUrl });
+    }
+    
 }
 
 module.exports = new TeamService();

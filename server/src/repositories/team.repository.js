@@ -69,6 +69,15 @@ class TeamRepository {
             { new: true }
         );
     }
+
+    // Cập nhật thông tin bất kỳ của Đội
+    async updateTeam(teamId, updateData) {
+        return await Team.findByIdAndUpdate(
+            teamId, 
+            updateData, 
+            { new: true } // Trả về data mới nhất sau khi sửa
+        ).populate('captainId', 'fullName displayName avatar'); // Nhớ populate nếu DTO của bạn cần thông tin Captain
+    }
 }
 
 module.exports = new TeamRepository();

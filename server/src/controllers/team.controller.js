@@ -94,6 +94,26 @@ class TeamController {
         // currentFund: updatedTeam.fund 
         // }, 'Team fund updated successfully');
     });
+
+    // PUT /api/teams/:id/avatar (Cập nhật ảnh đại diện đội)
+    updateTeamAvatar = asyncHandler(async (req, res) => {
+        const actionUserId = req.user.id; 
+        const teamId = req.params.id;
+
+        // check file có upload
+        if (!req.file) {
+            const error = new Error('No image file provided');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const avatarUrl = req.file.path;
+
+        // gửi link ảnh đã upload lên Cloudinary cho service xử lý lưu vào DB
+        const updatedTeam = await teamService.updateTeamAvatar(teamId, actionUserId, avatarUrl);
+        
+        res.success(new TeamResponseDTO(updatedTeam), 'Team avatar updated successfully');
+    });
 }
 
 module.exports = new TeamController();

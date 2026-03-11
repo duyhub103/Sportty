@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const teamController = require('../controllers/team.controller');
 const { protect } = require('../middlewares/auth.middleware');
+const uploadCloud = require('../configs/cloudinary');
 
 const activityController = require('../controllers/activity.controller');
 
@@ -15,6 +16,7 @@ router.post('/:id/join', teamController.requestToJoin);     // Xin gia nhập
 router.put('/:id/requests', teamController.handleJoinRequest); // Duyệt yêu cầu
 router.get('/:id/messages', teamController.getTeamMessages); // Lấy tin nhắn của đội
 router.put('/:id/fund', teamController.updateTeamFund);   // Thu - Chi quỹ đội
+router.put('/:id/avatar', uploadCloud.single('avatar'), teamController.updateTeamAvatar);
 
 // Các route liên quan đến Bảng tin (Activities), đặt route này trong team.route vì nó có liên quan đến teamId
 router.post('/:id/activities', activityController.createActivity); // :id ở đây chính là teamId
