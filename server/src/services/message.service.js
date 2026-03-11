@@ -48,6 +48,42 @@ class MessageService {
         const skip = (page - 1) * limit;
         return await messageRepository.getTeamMessages(teamId, skip, limit);
     }
+
+    // gửi tin nhắn (1-1 và Chat Nhóm)
+    async sendMessage(senderId, conversationId, type, content, contentType, io) {
+        // Lưu tin nhắn vào DB
+        const newMessage = await messageRepository.createMessage({
+            conversationId,
+            senderId,
+            type, 
+            content,
+            contentType
+        });
+
+        // Lấy thêm thông tin người gửi (Tên, Avatar) để App hiển thị
+        const populatedMessage = await newMessage.populate('senderId', 'fullName displayName avatar');
+
+        // Cập nhật Tin nhắn cuối và Phát loa
+        if (type === 'GROUP') {
+            await teamRepository.updateTeam(conversationId, {
+                lastMessage: content,
+                lastMessageTime: new Date()
+            });
+            // Phát cho anh em trong đội
+            if (io) io.to(conversationId.toString()).emit('receive_team_message', populatedMessage);
+            
+        } else if (type === 'PRIVATE') {
+            // Cập nhật lastMessage cho Match (đảm bảo matchRepository có hàm updateMatch)
+            await matchRepository.updateMatch(conversationId, {
+                lastMessage: content,
+                lastMessageTime: new Date()
+            });
+            // Phát cho 2 người trong phòng chat 1-1
+            if (io) io.to(conversationId.toString()).emit('receive_message', populatedMessage);
+        }
+
+        return populatedMessage;
+    }
 }
 
 module.exports = new MessageService();
