@@ -6,6 +6,7 @@ class SwipeController {
     swipe = asyncHandler(async (req, res) => {
         const swiperId = req.user.id; // Lấy ID của người đang đăng nhập (nhờ authMiddleware)
         const { receiverId, type } = req.body;
+        const io = req.app.get('io'); // Lấy instance Socket.io từ app.js
 
         // Validate cơ bản đầu vào
         if (!receiverId || !type) {
@@ -22,7 +23,7 @@ class SwipeController {
         }
 
         // Gọi service xử lý
-        const result = await swipeService.handleSwipe(swiperId, receiverId, type.toUpperCase());
+        const result = await swipeService.handleSwipe(swiperId, receiverId, type.toUpperCase(), io);
 
         res.success(result, 'Swiped successfully');
     });
