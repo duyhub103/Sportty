@@ -1,10 +1,11 @@
 const activityRepository = require('../repositories/activity.repository');
 const teamRepository = require('../repositories/team.repository');
+const notificationService = require('./notification.service');
 
 class ActivityService {
     
     // Tạo bài viết mới trên Bảng tin
-    async createActivity(teamId, userId, data) {
+    async createActivity(teamId, userId, data, io) {
         // Kiểm tra xem người đăng có phải là thành viên trong đội không
         const team = await teamRepository.getTeamById(teamId);
         if (!team) {
@@ -54,6 +55,30 @@ class ActivityService {
             const error = new Error('Invalid activity type');
             error.statusCode = 400;
             throw error;
+        }
+
+        // thông báo
+        if (io && (newActivityData.type === 'MATCH_SCHEDULE' || newActivityData.type === 'VOTE')) {
+            try {
+                // Lặp qua danh sách thành viên đội
+                for (const member of team.members) {
+                    // Lấy ID thành viên (có thể là userId trực tiếp hoặc userId._id nếu đã populate)
+                    const memberId = member.userId._id ? member.userId._id.toString() : member.userId.toString();
+                    
+                    // Không tự gửi thông báo cho chính người đăng bài
+                    if (memberId !== userId.toString()) {
+                        await notificationService.createAndSendNotification({
+                            recipientId: memberId,
+                            senderId: userId,
+                            type: newActivityData.type, // Có thể là 'MATCH_SCHEDULE' hoặc 'VOTE'
+                            content: `Đội trưởng vừa tạo một ${newActivityData.type === 'VOTE' ? 'cuộc bình chọn' : 'lịch điểm danh'} mới trong đội ${team.name}. Vào xem ngay!`,
+                            relatedId: team._id
+                        }, io);
+                    }
+                };
+            } catch (error) {
+                console.error('🔴 Lỗi khi gửi Notification Bảng tin:', error);
+            }
         }
 
         return await activityRepository.createActivity(newActivityData);

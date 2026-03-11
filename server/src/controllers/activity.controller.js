@@ -8,8 +8,9 @@ class ActivityController {
     createActivity = asyncHandler(async (req, res) => {
         const userId = req.user.id;
         const teamId = req.params.id;
+        const io = req.app.get('io');
         
-        const activity = await activityService.createActivity(teamId, userId, req.body);
+        const activity = await activityService.createActivity(teamId, userId, req.body, io);
         
         res.success(new ActivityResponseDTO(activity), 'Activity created successfully', 201);
     });

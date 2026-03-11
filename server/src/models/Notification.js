@@ -17,7 +17,8 @@ const notificationSchema = new Schema({
             'TEAM_JOIN_APPROVED',   // Đơn xin gia nhập được duyệt
             'TEAM_JOIN_REJECTED',   // Đơn xin gia nhập bị từ chối
             'MATCH_SCHEDULE',       // Đội trưởng lên lịch điểm danh
-            'SYSTEM'                // Thông báo chung từ hệ thống
+            'SYSTEM',                // Thông báo chung từ hệ thống
+            'VOTE'
         ], 
         required: true 
     },
