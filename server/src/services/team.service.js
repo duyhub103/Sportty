@@ -1,4 +1,5 @@
 const teamRepository = require('../repositories/team.repository');
+const notificationService = require('./notification.service');
 
 class TeamService {
     // Tạo đội mới 
@@ -29,7 +30,7 @@ class TeamService {
     }
 
     // user gửi yêu cầu tham gia team
-    async requestToJoin(teamId, userId) {
+    async requestToJoin(teamId, userId, io) {
         const team = await this.getTeamById(teamId);
 
         // check xem có phải thành viên không
@@ -46,11 +47,24 @@ class TeamService {
 
         // Đẩy vào phòng chờ
         await teamRepository.addPendingRequest(teamId, userId);
+
+        try {
+            await notificationService.createAndSendNotification({
+                recipientId: team.captainId,
+                senderId: userId,
+                type: 'TEAM_INVITE',
+                content: `Có một thành viên mới vừa xin gia nhập đội ${team.name} của bạn.`,
+                relatedId: team._id
+            }, io);
+        } catch (error) {
+            console.error('🔴 Lỗi khi gửi Notification xin vào đội:', error);
+        }
+        
         return { message: 'Join request sent successfully. Waiting for Captain approval.' };
     }
 
     // captain duyệt yêu cầu
-    async handleJoinRequest(teamId, actionUserId, targetUserId, action) {
+    async handleJoinRequest(teamId, actionUserId, targetUserId, action, io) {
         const team = await this.getTeamById(teamId);
 
         // check quyền captain
@@ -72,11 +86,35 @@ class TeamService {
             // Rút khỏi phòng chờ, đẩy vào danh sách chính thức
             await teamRepository.removePendingRequest(teamId, targetUserId);
             await teamRepository.addMember(teamId, targetUserId, 'MEMBER');
+
+            try {
+                await notificationService.createAndSendNotification({
+                    recipientId: targetUserId,
+                    senderId: actionUserId,
+                    type: 'TEAM_JOIN_APPROVED',
+                    content: `Chúc mừng! Bạn đã được duyệt vào đội ${team.name}.`,
+                    relatedId: team._id
+                }, io);
+            } catch (error) { 
+                console.error(error); 
+            }
+
             return { message: 'User approved and added to the team.' };
 
         } else if (action === 'REJECT') {
             // Chỉ cần rút khỏi phòng chờ
             await teamRepository.removePendingRequest(teamId, targetUserId);
+
+            try {
+                await notificationService.createAndSendNotification({
+                    recipientId: targetUserId,
+                    senderId: actionUserId,
+                    type: 'TEAM_JOIN_REJECTED',
+                    content: `Rất tiếc, yêu cầu gia nhập đội ${team.name} của bạn đã bị từ chối.`,
+                    relatedId: team._id
+                }, io);
+            } catch (error) { console.error(error); }
+
             return { message: 'Join request rejected.' };
 
         } else {
