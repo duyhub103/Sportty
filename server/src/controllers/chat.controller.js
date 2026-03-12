@@ -4,6 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { MatchResponseDTO, MessageResponseDTO } = require('../_dtos/chat.dto');
 
 class ChatController {
+
     // GET /api/matches
     getMatches = asyncHandler(async (req, res) => {
         const userId = req.user.id;
@@ -27,6 +28,24 @@ class ChatController {
         const result = messages.map(msg => new MessageResponseDTO(msg));
         
         res.success(result, 'Get messages successfully');
+    });
+
+    // POST /api/messages
+    sendMessage = asyncHandler(async (req, res) => {
+        const senderId = req.user.id;
+        const { conversationId, type, content, contentType } = req.body;
+        const io = req.app.get('io'); // Lấy loa Socket
+
+        if (!conversationId || !content) {
+            const error = new Error('conversationId and content are required');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const message = await messageService.sendMessage(senderId, conversationId, type, content, contentType || 'text', io);
+        
+        // Trả về DTO
+        res.success(new MessageResponseDTO(message), 'Message sent successfully', 201);
     });
 }
 
