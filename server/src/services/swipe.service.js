@@ -1,7 +1,7 @@
 const swipeRepository = require('../repositories/swipe.repository');
 const matchRepository = require('../repositories/match.repository');
 const userRepository = require('../repositories/user.repository'); // Import để check user tồn tại
-const NotificationService = require('./notification.service'); 
+const notificationService = require('./notification.service'); 
 
 class SwipeService {
     async handleSwipe(swiperId, receiverId, type, io) {
