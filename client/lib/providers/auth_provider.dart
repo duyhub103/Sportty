@@ -1,41 +1,67 @@
-// quản lý trạng thái
-//  nhiệm vụ cầu nói giữa service và UI, UI lắng nghe provider này để cập nhật loading
-
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../core/storage/local_storage.dart';
+import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthService _authService = AuthService();
+  UserModel? _user;
+  bool _isLoading = false;
 
-  bool _isloading = false;
-  String? _errorMessage;
-  Map<String, dynamic>? _user; // lưu thông tin user tạm thời sau login
+  UserModel? get user => _user;
+  bool get isLoading => _isLoading;
 
-  bool get isLoading => _isloading;
-  String? get errorMessage => _errorMessage;
-  Map<String, dynamic>? get user => _user;
+  // Xử lý Login
+  Future<void> login(String email, String password) async {
+    _isLoading = true;
+    notifyListeners(); // Báo cho UI hiện vòng xoay Loading
 
-  Future<bool> login(String email, String password) async {
-    _isloading = true;
-    _errorMessage = null;
-    notifyListeners(); // thông báo UI cập nhật trạng thái loading (hiện vòng xoay)
-
-    try{
-      final result = await _authService.login(email, password);
-      // login thành cnông
-      _user = result['data']['user']; // lưu thông tin user
-      // TODO: Lưu token vào Shared Preferences
-
-      _isloading = false;
+    try {
+      final data = await AuthService.login(email, password);
+      
+      if (data['success'] == true) {
+        // lưu Token vào LocalStorage để lần sau tự động gắn vào header
+        final token = data['data']['token'];
+        await LocalStorage.saveToken(token);
+        
+        // Dịch JSON thành UserModel
+        _user = UserModel.fromJson(data['data']['user']);
+        
+        _isLoading = false;
+        notifyListeners(); // Báo cho UI tắt Loading, chuyển trang
+      }
+    } catch (e) {
+      _isLoading = false;
       notifyListeners();
-      return true; // báo oke
-
-    }catch (e){
-      _isloading = false;
-      _errorMessage = e.toString().replaceAll("Exception: ", "");
-      notifyListeners();
-      return false;
+      rethrow; // Quăng lỗi ra UI để hiện Toast
     }
+  }
 
+  // Xử lý Đăng ký
+  Future<void> register(String email, String password, String fullName) async {
+    _isLoading = true;
+    notifyListeners(); 
+
+    try {
+      final data = await AuthService.register(email, password, fullName);
+      
+      if (data['success'] == true) {
+        // Đăng ký thành công
+        // Backend sẽ không trả về Token ở bước này, tắt Loading để UI hiện thông báo và về màn Login.
+        _isLoading = false;
+        notifyListeners();
+      }
+    } catch (e) {
+      // Nếu lỗi (VD: Email đã tồn tại, pass quá ngắn...)
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+  
+  // Xử lý Đăng xuất
+  Future<void> logout() async {
+    await LocalStorage.removeToken();
+    _user = null;
+    notifyListeners();
   }
 }

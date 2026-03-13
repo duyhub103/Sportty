@@ -30,13 +30,32 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  # QUẢN LÝ TRẠNG THÁI (State Management)
   provider: ^6.1.2
-  http: ^1.2.0
+
+  # KẾT NỐI MẠNG & GỌI API (Network Layer)
+  dio: ^5.4.2 # tự động gắn Token và dễ dàng upload ảnh form-data
+  socket_io_client: ^3.0.0-beta.3 # Bắt buộc phải có để nghe ngóng tin nhắn Real-time
+
+  # LƯU TRỮ CỤC BỘ (Local Storage)
+  shared_preferences: ^2.2.2 # Lưu Token đăng nhập để lần sau mở app không phải login lại
+
+  # TIỆN ÍCH DỮ LIỆU & ĐỊNH DẠNG (Utilities)
+  intl: ^0.19.0 # Format ngày tháng (chuyển "2026-03-06T18:56:50" thành "18:56 - 06/03/2026")
+  jwt_decoder: ^2.0.1 # Đọc dữ liệu giải mã từ Token
+
+  # TÍNH NĂNG ĐẶC THÙ
+  image_picker: ^1.0.7 # Mở thư viện/camera chọn ảnh Avatar, ảnh Đội bóng
+  cached_network_image: ^3.3.1 # Tải và lưu cache ảnh Cloudinary cực mượt, không bị giật lag
+  geolocator: ^11.0.0 # Lấy tọa độ GPS (Long/Lat) để gọi API "Tìm quanh đây"
+  flutter_card_swiper: ^7.0.0 # Thư viện tạo UI quẹt thẻ LIKE/DISLIKE
+
+  # UI & HIỆU ỨNG (Giao diện)
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1 # Font chữ đẹp không cần tải file local
+  flutter_svg: ^2.0.10 # Vẽ icon SVG sắc nét
+  fluttertoast: ^8.2.4 # Hiện thông báo nổi (Toast) báo lỗi hoặc thành công
 
 dev_dependencies:
   flutter_test:
