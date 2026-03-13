@@ -11,6 +11,12 @@ module.exports = (io) => {
             socket.join(matchId);
             console.log(`Báo cáo: Socket ${socket.id} đã vào phòng Match: ${matchId}`);
         });
+
+        // Lắng nghe khi User MỞ màn hình Chat Nhóm
+        socket.on('join_team_chat', (teamId) => {
+            socket.join(teamId); 
+            console.log(`Báo cáo: Socket ${socket.id} đã vào phòng Team: ${teamId}`);
+        });
     
         socket.on('join_notification', (userId) => {
             socket.join(userId); // User vào phòng mang tên ID của chính mình
