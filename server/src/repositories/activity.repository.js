@@ -14,6 +14,8 @@ class ActivityRepository {
         return await TeamActivity.find({ teamId })
             .populate('createdBy', 'fullName displayName avatar') // Lấy người đăng
             .populate('voteOptions.voters', 'fullName displayName avatar') // Lấy danh sách người đã vote
+            .skip(skip)
+            .limit(limit)
             .sort({ createdAt: -1 }); // Bài mới nhất nổi lên đầu
     }
 

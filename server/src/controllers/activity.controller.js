@@ -18,8 +18,10 @@ class ActivityController {
     // GET /api/teams/:teamId/activities
     getActivities = asyncHandler(async (req, res) => {
         const teamId  = req.params.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
         
-        const activities = await activityService.getActivities(teamId);
+        const activities = await activityService.getActivities(teamId, page, limit);
         const result = activities.map(act => new ActivityResponseDTO(act));
         
         res.success(result, 'Get activities successfully');

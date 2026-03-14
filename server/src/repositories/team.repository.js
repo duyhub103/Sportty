@@ -21,6 +21,8 @@ class TeamRepository {
         
         return await Team.find(query)
             .populate('members.userId', 'fullName displayName avatar') // Kéo theo info thành viên
+            .skip(skip)
+            .limit(limit)
             .sort({ createdAt: -1 }); // Mới nhất lên đầu
     }
 

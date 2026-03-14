@@ -85,8 +85,9 @@ class ActivityService {
     }
 
     // Lấy danh sách Bảng tin
-    async getActivities(teamId) {
-        return await activityRepository.getActivitiesByTeam(teamId);
+    async getActivities(teamId, page = 1, limit = 20) {
+        const skip = (page - 1) * limit;
+        return await activityRepository.getActivitiesByTeam(teamId, skip, limit);
     }
 
     // User tương tác (Vote hoặc Điểm danh)

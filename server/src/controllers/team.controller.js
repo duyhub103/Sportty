@@ -19,10 +19,12 @@ class TeamController {
     getTeams = asyncHandler(async (req, res) => {
         const filter = {
             sport: req.query.sport,
-            keyword: req.query.keyword
+            keyword: req.query.keyword,
         };
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
         
-        const teams = await teamService.getTeams(filter);
+        const teams = await teamService.getTeams(filter, page, limit);
         const result = teams.map(t => new TeamResponseDTO(t));
         
         res.success(result, 'Get teams successfully');

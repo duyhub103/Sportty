@@ -18,8 +18,9 @@ class TeamService {
     }
 
     // Lấy danh sách đội
-    async getTeams(filter) {
-        return await teamRepository.getTeams(filter);
+    async getTeams(filter, page = 1, limit = 20) {
+        const skip = (page - 1) * limit;
+        return await teamRepository.getTeams(filter, skip, limit);
     }
 
     // Lấy chi tiết đội
