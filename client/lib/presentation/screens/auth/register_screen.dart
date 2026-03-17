@@ -58,16 +58,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ? null
                       : () async {
                           if (_formKey.currentState!.validate()) {
-                            try {
-                              await context.read<AuthProvider>().register(
-                                _emailController.text,
-                                _passwordController.text,
-                                _fullNameController.text,
-                              );
+                            final provider = context.read<AuthProvider>();
+                            
+                            final success = await provider.register(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                              _fullNameController.text.trim(),
+                            );
+
+                            if (success) {
                               Fluttertoast.showToast(msg: "Đăng ký thành công! Vui lòng đăng nhập.");
-                              Navigator.pop(context); // Bắn ngược về màn hình Login
-                            } catch (e) {
-                              Fluttertoast.showToast(msg: e.toString(), backgroundColor: Colors.red);
+                              if (context.mounted) {
+                                Navigator.pop(context); // Bắn ngược về màn hình Login
+                              }
+                            } else {
+                              Fluttertoast.showToast(
+                                msg: provider.errorMessage ?? "Lỗi đăng ký", 
+                                backgroundColor: Colors.red,
+                              );
                             }
                           }
                         },

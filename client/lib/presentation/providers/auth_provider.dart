@@ -1,67 +1,73 @@
 import 'package:flutter/material.dart';
-import '../../data/services/auth_service.dart';
-import '../../core/storage/local_storage.dart';
 import '../../data/models/user_model.dart';
+import '../../data/repositories/auth_repository.dart';
 
-class AuthProvider with ChangeNotifier {
-  UserModel? _user;
+class AuthProvider extends ChangeNotifier {
+  final AuthRepository _authRepository;
+
+  AuthProvider(this._authRepository);
+
   bool _isLoading = false;
-
-  UserModel? get user => _user;
   bool get isLoading => _isLoading;
 
-  // Xử lý Login
-  Future<void> login(String email, String password) async {
-    _isLoading = true;
-    notifyListeners(); // Báo cho UI hiện vòng xoay Loading
+  UserModel? _currentUser;
+  UserModel? get currentUser => _currentUser;
+
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  // Hàm đăng ký
+  Future<bool> register(String email, String password, String fullName) async {
+    _setLoading(true);
+    _clearError();
 
     try {
-      final data = await AuthService.login(email, password);
-      
-      if (data['success'] == true) {
-        // lưu Token vào LocalStorage để lần sau tự động gắn vào header
-        final token = data['data']['token'];
-        await LocalStorage.saveToken(token);
-        
-        // Dịch JSON thành UserModel
-        _user = UserModel.fromJson(data['data']['user']);
-        
-        _isLoading = false;
-        notifyListeners(); // Báo cho UI tắt Loading, chuyển trang
-      }
+      _currentUser = await _authRepository.register(email, password, fullName);
+      _setLoading(false);
+      return true; 
     } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      rethrow; // Quăng lỗi ra UI để hiện Toast
+      // Bắt lỗi (ví dụ: Email đã tồn tại) từ Repository đẩy lên
+      _errorMessage = e.toString().replaceAll('Exception: ', ''); 
+      _setLoading(false);
+      return false; 
     }
   }
 
-  // Xử lý Đăng ký
-  Future<void> register(String email, String password, String fullName) async {
-    _isLoading = true;
-    notifyListeners(); 
+  // Hàm login 
+  Future<bool> login(String email, String password) async {
+    _setLoading(true);
+    _clearError();
 
     try {
-      final data = await AuthService.register(email, password, fullName);
-      
-      if (data['success'] == true) {
-        // Đăng ký thành công
-        // Backend sẽ không trả về Token ở bước này, tắt Loading để UI hiện thông báo và về màn Login.
-        _isLoading = false;
-        notifyListeners();
-      }
+      _currentUser = await _authRepository.login(email, password);
+      _setLoading(false);
+      return true; 
     } catch (e) {
-      // Nếu lỗi (VD: Email đã tồn tại, pass quá ngắn...)
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
+      // Bắt lỗi (ví dụ: Sai mật khẩu) từ Repository đẩy lên
+      _errorMessage = e.toString().replaceAll('Exception: ', ''); 
+      _setLoading(false);
+      return false; 
     }
+  }
+
+  Future<void> logout() async {
+    // Gọi Repository xóa token dưới Local Storage
+    await _authRepository.logout();
+    
+    // Xóa dữ liệu user hiện tại đang lưu trong state
+    _currentUser = null;
+    
+    // Thông báo cho UI biết state đã thay đổi
+    notifyListeners();
   }
   
-  // Xử lý Đăng xuất
-  Future<void> logout() async {
-    await LocalStorage.removeToken();
-    _user = null;
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _errorMessage = null;
     notifyListeners();
   }
 }

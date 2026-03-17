@@ -63,26 +63,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: isLoading
-                      ? null // Nếu đang loading thì khóa nút lại
+                      ? null
                       : () async {
                           if (_formKey.currentState!.validate()) {
-                            try {
-                              // Gọi bộ não AuthProvider
-                              await context.read<AuthProvider>().login(
-                                _emailController.text,
-                                _passwordController.text,
-                              );
+                            // Lấy instance của provider
+                            final provider = context.read<AuthProvider>();
+                            
+                            // Nhận kết quả boolean từ provider
+                            final success = await provider.login(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
+
+                            // Xử lý UI dựa trên kết quả
+                            if (success) {
                               Fluttertoast.showToast(msg: "Đăng nhập thành công!");
-                              // main_screen
                               if (context.mounted) {
                                 Navigator.pushReplacement(
                                   context, 
                                   MaterialPageRoute(builder: (_) => const MainScreen())
                                 );
                               }
-                            } catch (e) {
+                            } else {
                               Fluttertoast.showToast(
-                                msg: e.toString(), 
+                                msg: provider.errorMessage ?? "Lỗi đăng nhập", 
                                 backgroundColor: Colors.red,
                               );
                             }
@@ -95,9 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 20),
                 
-                // Nút chuyển sang màn Đăng ký
+                // sang màn Đăng ký
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
                   },
                   child: const Text('Chưa có tài khoản? Đăng ký ngay'),
