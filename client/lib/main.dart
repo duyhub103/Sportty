@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/main/main_screen.dart';
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/main/main_screen.dart';
 import 'core/storage/local_storage.dart';
 
 void main() async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../core/storage/local_storage.dart';
-import '../models/user_model.dart';
+import '../../data/services/auth_service.dart';
+import '../../core/storage/local_storage.dart';
+import '../../data/models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
   UserModel? _user;
