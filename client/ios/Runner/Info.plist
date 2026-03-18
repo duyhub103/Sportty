@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Sportty cần quyền vị trí để tìm kiếm đồng đội và sân tập xung quanh bạn.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Sportty cần quyền vị trí để tìm kiếm đồng đội và sân tập xung quanh bạn.</string>
+
 </dict>
 </plist>

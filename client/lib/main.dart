@@ -7,11 +7,14 @@ import 'core/storage/local_storage.dart';
 // Import Data Layer
 import 'data/services/auth_service.dart';
 import 'data/repositories/auth_repository.dart';
+import 'data/services/profile_service.dart';
+import 'data/repositories/profile_repository.dart';
 
 // Import Presentation Layer
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
+import 'presentation/providers/profile_provider.dart';
 
 void main() async {
   // Bắt buộc phải có dòng này khi hàm main() có dùng async/await
@@ -22,12 +25,15 @@ void main() async {
 
   final authRepository = AuthRepository(AuthService());
   final authProvider = AuthProvider(authRepository);
+  final profileService = ProfileService();
+  final profileRepository = ProfileRepository(profileService);
 
   runApp(
     // Bọc MultiProvider ở ngoài cùng để sau này nhét các State vào
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
+        ChangeNotifierProvider(create: (_) => ProfileProvider(profileRepository)),
       ],
       child: const SporttyApp(),
     ),
