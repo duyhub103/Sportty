@@ -1,42 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../auth/login_screen.dart';
 
-class MainScreen extends StatelessWidget {
+// Import 3 màn hình con
+import '../discover/discover_screen.dart';
+import '../chat/chat_main_screen.dart';
+import '../profile/profile_main_screen.dart';
+
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  // Biến lưu vị trí Tab đang được chọn (Mặc định 0 là Tab Khám phá)
+  int _currentIndex = 0;
+
+  // Danh sách 3 màn hình con
+  final List<Widget> _pages = [
+    const DiscoverScreen(),
+    const ChatMainScreen(),
+    const ProfileMainScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trang chủ Sportty'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          // Nút Đăng xuất
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              // Gọi hàm logout trong AuthProvider (Hàm này sẽ xóa Token)
-              await context.read<AuthProvider>().logout();
-              
-              // Đẩy người dùng về lại màn hình Login và xóa sạch lịch sử trang
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              }
-            },
-          )
-        ],
+      // Dùng IndexedStack để giữ nguyên State của các màn hình khi chuyển Tab
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
-      body: const Center(
-        child: Text(
-          'Chào mừng sếp đến với Sportty!', 
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
-        ),
+      // +bottom nav
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          // Khi bấm vào icon, cập nhật lại biến _currentIndex để chuyển màn hình
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        // Cấu hình UI 
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed, // Giữ các icon cố định, không bị nhún nhảy
+        
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: 'Khám phá',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Trò chuyện',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Hồ sơ',
+          ),
+        ],
       ),
     );
   }

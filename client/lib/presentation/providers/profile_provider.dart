@@ -60,7 +60,7 @@ class ProfileProvider extends ChangeNotifier {
   Future<bool> submitProfileSetup({
     required String displayName,
     required String bio,
-    required String sport,
+    required List<String> sports,
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -69,7 +69,7 @@ class ProfileProvider extends ChangeNotifier {
       UserModel updatedUser = await _profileRepository.updateProfile(
         displayName: displayName,
         bio: bio,
-        sport: sport,
+        sports: sports,
         lat: latitude,
         lng: longitude,
         avatarPath: avatarPath,
@@ -85,8 +85,50 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
+  // Thêm các biến state mới vào ProfileProvider
+  UserModel? _userProfile;
+  UserModel? get userProfile => _userProfile;
+
+  // Hàm load dữ liệu khi vào Tab Profile
+  Future<void> fetchProfile() async {
+    _setLoading(true);
+    _clearError();
+    try {
+      _userProfile = await _profileRepository.getProfile();
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+    }
+    _setLoading(false);
+  }
+
+  // Hàm chọn ảnh từ máy và Upload lên Gallery
+  Future<bool> addImageToGallery() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      _setLoading(true);
+      try {
+        // Upload và nhận về Profile mới để cập nhật UI
+        _userProfile = await _profileRepository.uploadGalleryImage(image.path);
+        _setLoading(false);
+        return true;
+      } catch (e) {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _setLoading(false);
+        return false;
+      }
+    }
+    return false; // Người dùng hủy chọn ảnh
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _errorMessage = null;
     notifyListeners();
   }
 }

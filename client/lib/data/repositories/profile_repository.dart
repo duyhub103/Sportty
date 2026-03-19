@@ -10,7 +10,7 @@ class ProfileRepository {
   Future<UserModel> updateProfile({
     String? displayName,
     String? bio,
-    String? sport,
+    List<String>? sports,
     double? lat,
     double? lng,
     String? avatarPath,
@@ -19,7 +19,7 @@ class ProfileRepository {
       final response = await _profileService.updateProfile(
         displayName: displayName,
         bio: bio,
-        sport: sport,
+        sports: sports,
         lat: lat,
         lng: lng,
         avatarPath: avatarPath,
@@ -35,6 +35,39 @@ class ProfileRepository {
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Lỗi kết nối Server');
+    } catch (e) {
+      throw Exception('Lỗi hệ thống: $e');
+    }
+  }
+
+  // Lấy Profile
+  Future<UserModel> getProfile() async {
+    try {
+      final response = await _profileService.getProfile();
+      final responseData = response.data;
+
+      if (responseData['success'] == true) {
+        return UserModel.fromJson(responseData['data']);
+      } else {
+        throw Exception(responseData['message'] ?? 'Lấy thông tin thất bại');
+      }
+    } catch (e) {
+      throw Exception('Lỗi hệ thống: $e');
+    }
+  }
+
+  // Upload ảnh Gallery
+  Future<UserModel> uploadGalleryImage(String imagePath) async {
+    try {
+      final response = await _profileService.uploadGalleryImage(imagePath);
+      final responseData = response.data;
+
+      if (responseData['success'] == true) {
+        // Trả về User mới nhất (đã có thêm ảnh trong mảng gallery)
+        return UserModel.fromJson(responseData['data']);
+      } else {
+        throw Exception(responseData['message'] ?? 'Upload ảnh thất bại');
+      }
     } catch (e) {
       throw Exception('Lỗi hệ thống: $e');
     }

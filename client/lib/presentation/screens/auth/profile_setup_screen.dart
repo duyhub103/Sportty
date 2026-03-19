@@ -18,7 +18,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   final _displayNameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _sportController = TextEditingController();
+  // Khai báo danh sách các môn thể thao có sẵn
+  final List<String> _availableSports = [
+    '⚽ Bóng đá', '🏃 Chạy bộ', '🏓 Bóng bàn', 
+    '🏸 Cầu lông', '🏀 Bóng rổ', '🏊 Bơi lội', '💪 Gym'
+  ];
+
+  // Mảng chứa các môn người dùng chọn
+  List<String> _selectedSports = [];
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +84,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   // --- Giao diện Bước 1: Avatar, Tên, Bio, Sport ---
   Widget _buildStep1(ProfileProvider provider) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // Căn lề trái
       children: [
         GestureDetector(
           onTap: () => provider.pickImage(),
@@ -92,7 +100,33 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const SizedBox(height: 20),
         CustomTextField(controller: _displayNameController, label: 'Tên hiển thị (Tinder Name)', icon: Icons.person),
         CustomTextField(controller: _bioController, label: 'Giới thiệu bản thân (Bio)', icon: Icons.info),
-        CustomTextField(controller: _sportController, label: 'Môn thể thao yêu thích (VD: Bóng đá)', icon: Icons.fitness_center),
+        const SizedBox(height: 16),
+        const Text('Sở thích thể thao', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+
+        // 3. Render danh sách Chip chọn thể thao
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: _availableSports.map((sport) {
+            final isSelected = _selectedSports.contains(sport);
+            return FilterChip(
+              label: Text(sport),
+              selected: isSelected,
+              selectedColor: Colors.green.withOpacity(0.2),
+              checkmarkColor: Colors.green,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedSports.add(sport);
+                  } else {
+                    _selectedSports.remove(sport);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
       ],
     );
   }
@@ -135,6 +169,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         Fluttertoast.showToast(msg: "Vui lòng nhập Tên hiển thị");
         return;
       }
+      // Chọn ít nhất 1 môn thể thao
+      if (_selectedSports.isEmpty) {
+        Fluttertoast.showToast(msg: "Vui lòng chọn ít nhất 1 môn thể thao");
+        return;
+      }
       setState(() => _currentStep = 2);
     } else {
       if (provider.latitude == null) {
@@ -146,7 +185,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final success = await provider.submitProfileSetup(
         displayName: _displayNameController.text.trim(),
         bio: _bioController.text.trim(),
-        sport: _sportController.text.trim(),
+        sports: _selectedSports,
       );
 
       if (success) {

@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import 'register_screen.dart';
 import '../main/main_screen.dart';
+import '../../providers/profile_provider.dart';
 import 'profile_setup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -78,12 +79,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Xử lý UI dựa trên kết quả
                             if (success) {
-                              Fluttertoast.showToast(msg: "Đăng nhập thành công!");
                               if (context.mounted) {
-                                Navigator.pushReplacement(
-                                  context, 
-                                  MaterialPageRoute(builder: (_) => const ProfileSetupScreen())
-                                );
+                                // Gọi API lấy Full Profile (chứa đầy đủ sports, gallery, location...)
+                                await context.read<ProfileProvider>().fetchProfile();
+                                
+                                // Lấy thông tin user CẬP NHẬT NHẤT từ ProfileProvider
+                                final fullUser = context.read<ProfileProvider>().userProfile;
+                                
+                                // Kiểm tra xem người dùng đã setup (có chọn môn thể thao nào chưa)
+                                // Nếu fullUser bị null hoặc mảng sports rỗng -> Chưa setup
+                                bool isProfileIncomplete = fullUser == null || fullUser.sports.isEmpty; 
+
+                                if (isProfileIncomplete) {
+                                  Fluttertoast.showToast(msg: "Vui lòng hoàn tất hồ sơ!");
+                                  Navigator.pushReplacement(
+                                    context, 
+                                    MaterialPageRoute(builder: (_) => const ProfileSetupScreen())
+                                  );
+                                } else {
+                                  Fluttertoast.showToast(msg: "Đăng nhập thành công!");
+                                  Navigator.pushReplacement(
+                                    context, 
+                                    MaterialPageRoute(builder: (_) => const MainScreen())
+                                  );
+                                }
                               }
                             } else {
                               Fluttertoast.showToast(

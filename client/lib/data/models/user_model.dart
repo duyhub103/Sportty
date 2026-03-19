@@ -4,6 +4,7 @@ class UserModel {
   final String displayName;
   final String email;
   final String? avatar; // Có thể null vì người mới chưa có avatar
+  final List<String> gallery;
   final String? bio;
   final List<String> sports;
   final double? longitude;
@@ -18,6 +19,7 @@ class UserModel {
     required this.email,
     this.avatar,
     this.bio,
+    this.gallery = const [],
     this.sports = const [],
     this.longitude,
     this.latitude,
@@ -47,6 +49,7 @@ class UserModel {
       bio: json['bio'] ?? '',
       // Ép kiểu mảng dynamic sang mảng String
       sports: (json['sports'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      gallery: (json['gallery'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [], // parse mảng gallery từ JSON
       longitude: lng,
       latitude: lat,
     );
