@@ -34,7 +34,14 @@ class UserController {
             
             // Nếu có up gallery thì tạo mảng chứa các URL
             if (req.files['gallery'] && req.files['gallery'].length > 0) {
-                updateData.gallery = req.files['gallery'].map(file => file.path);
+                const newGalleryUrls = req.files['gallery'].map(file => file.path);
+
+                // Sử dụng toán tử $push và $each của MongoDB để nối mảng
+                updateData.$push = { gallery: { $each: newGalleryUrls } };
+                
+                // Xóa key 'gallery' ở object gốc (nếu client lỡ gửi dạng text) 
+                // để tránh xung đột giữa $set và $push trong Mongoose
+                delete updateData.gallery;
             }
         }
 
