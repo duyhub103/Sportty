@@ -49,7 +49,7 @@ dependencies:
   image_picker: ^1.0.7 # Mở thư viện/camera chọn ảnh Avatar, ảnh Đội bóng
   cached_network_image: ^3.3.1 # Tải và lưu cache ảnh Cloudinary cực mượt, không bị giật lag
   geolocator: ^11.0.0 # Lấy tọa độ GPS (Long/Lat) để gọi API "Tìm quanh đây"
-  flutter_card_swiper: ^7.0.0 # Thư viện tạo UI quẹt thẻ LIKE/DISLIKE
+  flutter_card_swiper: ^7.2.0 # Thư viện tạo UI quẹt thẻ LIKE/DISLIKE
 
   # UI & HIỆU ỨNG (Giao diện)
   cupertino_icons: ^1.0.8

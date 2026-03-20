@@ -14,7 +14,7 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
-  int _currentStep = 1; // 1: Info & Avatar, 2: Location & Submit
+  int _currentStep = 1; // Info & Avatar, 2: Location & Submit
 
   final _displayNameController = TextEditingController();
   final _bioController = TextEditingController();
@@ -25,7 +25,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   ];
 
   // Mảng chứa các môn người dùng chọn
-  List<String> _selectedSports = [];
+  final List<String> _selectedSports = [];
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +81,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  // --- Giao diện Bước 1: Avatar, Tên, Bio, Sport ---
+  // Giao diện Bước 1: Avatar, Tên, Bio, Sport
   Widget _buildStep1(ProfileProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start, // Căn lề trái
@@ -104,7 +104,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const Text('Sở thích thể thao', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
 
-        // 3. Render danh sách Chip chọn thể thao
+        // Render danh sách Chip chọn thể thao
         Wrap(
           spacing: 8.0,
           runSpacing: 8.0,
@@ -131,7 +131,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  // --- Giao diện Bước 2: GPS ---
+  // Giao diện Bước 2: GPS
   Widget _buildStep2(ProfileProvider provider) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -162,7 +162,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  // --- Logic nút Bấm dưới cùng ---
+  // nút Bấm dưới cùng
   void _handleNextOrSubmit(ProfileProvider provider) async {
     if (_currentStep == 1) {
       if (_displayNameController.text.isEmpty) {
