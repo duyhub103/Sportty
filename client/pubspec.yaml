@@ -36,7 +36,7 @@ dependencies:
 
   # KẾT NỐI MẠNG & GỌI API (Network Layer)
   dio: ^5.4.2 # tự động gắn Token và dễ dàng upload ảnh form-data
-  socket_io_client: ^3.0.0-beta.3 # Bắt buộc phải có để nghe ngóng tin nhắn Real-time
+  socket_io_client: ^3.1.4 # Bắt buộc phải có để nghe ngóng tin nhắn Real-time
 
   # LƯU TRỮ CỤC BỘ (Local Storage)
   shared_preferences: ^2.2.2 # Lưu Token đăng nhập để lần sau mở app không phải login lại

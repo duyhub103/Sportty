@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/network/socket_client.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -57,6 +58,8 @@ class AuthProvider extends ChangeNotifier {
     // Xóa dữ liệu user hiện tại đang lưu trong state
     _currentUser = null;
     
+    // ngắt kết nối tới socket.io
+    SocketClient().disconnect();
     // Thông báo cho UI biết state đã thay đổi
     notifyListeners();
   }

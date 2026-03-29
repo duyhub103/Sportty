@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../../../core/network/socket_client.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import 'register_screen.dart';
 import '../main/main_screen.dart';
 import '../../providers/profile_provider.dart';
 import 'profile_setup_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -79,6 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Xử lý UI dựa trên kết quả
                             if (success) {
+                              
+                              SocketClient().initSocket(); // Khởi tạo kết nối Socket.IO ngay sau khi đăng nhập thành công
+
                               if (context.mounted) {
                                 // Gọi API lấy Full Profile (chứa đầy đủ sports, gallery, location...)
                                 await context.read<ProfileProvider>().fetchProfile();

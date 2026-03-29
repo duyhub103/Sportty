@@ -4,6 +4,7 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import '../../providers/discover_provider.dart';
 import '../../../data/models/nearby_user_model.dart';
 import '../../providers/profile_provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -228,6 +229,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             onPressed: () {
               Navigator.pop(context);
               // TODO: Nhảy sang màn hình Chat với matchUser.id
+              Fluttertoast.showToast(msg: "Đang mở chat với ${matchUser.displayName}...");
+              
+              // TODO
+              // Navigator.push(context, MaterialPageRoute(builder: (_) => ChatDetailScreen(matchId: result.matchId)));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             child: const Text('Nhắn tin', style: TextStyle(color: Colors.pinkAccent)),

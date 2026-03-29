@@ -11,6 +11,8 @@ import 'data/services/profile_service.dart';
 import 'data/repositories/profile_repository.dart';
 import 'data/services/discover_service.dart';
 import 'data/repositories/discover_repository.dart';
+import 'data/services/chat_service.dart';
+import 'data/repositories/chat_repository.dart';
 
 // Import Presentation Layer
 import 'presentation/providers/auth_provider.dart';
@@ -18,6 +20,8 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
 import 'presentation/providers/profile_provider.dart';
 import 'presentation/providers/discover_provider.dart';
+import 'presentation/providers/chat_provider.dart';
+
 
 void main() async {
   // Bắt buộc phải có dòng này khi hàm main() có dùng async/await
@@ -32,6 +36,8 @@ void main() async {
   final profileRepository = ProfileRepository(profileService);
   final discoverService = DiscoverService();
   final discoverRepository = DiscoverRepository(discoverService);
+  final chatService = ChatService();
+  final chatRepository = ChatRepository(chatService);
 
   runApp(
     // Bọc MultiProvider ở ngoài cùng để sau này nhét các State vào
@@ -40,6 +46,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => ProfileProvider(profileRepository)),
         ChangeNotifierProvider(create: (_) => DiscoverProvider(discoverRepository)),
+        ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
       ],
       child: const SporttyApp(),
     ),
