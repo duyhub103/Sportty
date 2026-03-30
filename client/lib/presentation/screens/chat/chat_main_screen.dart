@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
-// import 'chat_detail_screen.dart'; // TODO
+import 'chat_detail_screen.dart';
 
 class ChatMainScreen extends StatefulWidget {
   const ChatMainScreen({super.key});
@@ -86,7 +86,7 @@ class _ChatMainScreenState extends State<ChatMainScreen> {
                   match.partnerName,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                // Tin nhắn cuối cùng (hoặc lời chào mời nếu chưa nhắn gì)
+                // Tin nhắn cuối cùng (lời chào mời nếu chưa nhắn gì)
                 subtitle: Text(
                   match.lastMessage.isNotEmpty ? match.lastMessage : 'Bắt đầu cuộc trò chuyện ngay!',
                   maxLines: 1,
@@ -101,14 +101,10 @@ class _ChatMainScreenState extends State<ChatMainScreen> {
                   timeString,
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-                onTap: () {
-                  // TODO: Bấm vào sẽ nhảy sang ChatDetailScreen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đang mở chat với ${match.partnerName}...'))
-                  );
-                  
-                  // TODO
-                  // Navigator.push(context, MaterialPageRoute(builder: (_) => ChatDetailScreen(matchInfo: match)));
+                onTap: () {                 
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (_) => ChatDetailScreen(matchInfo: match)));
                 },
               );
             },
