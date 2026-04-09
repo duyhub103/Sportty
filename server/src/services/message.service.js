@@ -1,12 +1,10 @@
 const messageRepository = require('../repositories/message.repository');
 const matchRepository = require('../repositories/match.repository'); // Gọi chéo để check quyền
-
 const teamRepository = require('../repositories/team.repository');
+const { MessageResponseDTO } = require('../_dtos/chat.dto');
 
 class MessageService {
     async getMatchMessages(userId, matchId, page = 1, limit = 20) {
-        // check quyền truy cập phòng chat của user
-        const match = await matchRepository.checkMatchExists(userId, userId); // Kiểm tra xem user có thuộc phòng chat này không
 
         const Match = require('../models/Match');
         const isMember = await Match.findOne({ _id: matchId, users: userId });
@@ -80,6 +78,8 @@ class MessageService {
         // Lấy thêm thông tin người gửi (Tên, Avatar) để App hiển thị
         const populatedMessage = await newMessage.populate('senderId', 'fullName displayName avatar');
 
+        const dtoMessage = new MessageResponseDTO(populatedMessage); // chuyển data sang dto trước khi phát socket
+
         // Cập nhật Tin nhắn cuối và Phát loa
         if (type === 'GROUP') {
             await teamRepository.updateTeam(conversationId, {
@@ -87,7 +87,7 @@ class MessageService {
                 lastMessageTime: new Date()
             });
             // Phát cho anh em trong đội
-            if (io) io.to(conversationId.toString()).emit('receive_team_message', populatedMessage);
+            if (io) io.to(conversationId.toString()).emit('receive_team_message', dtoMessage);
             
         } else if (type === 'PRIVATE') {
             // Cập nhật lastMessage cho Match (đảm bảo matchRepository có hàm updateMatch)
@@ -96,7 +96,7 @@ class MessageService {
                 lastMessageTime: new Date()
             });
             // Phát cho 2 người trong phòng chat 1-1
-            if (io) io.to(conversationId.toString()).emit('receive_message', populatedMessage);
+            if (io) io.to(conversationId.toString()).emit('receive_message', dtoMessage);
         }
 
         return populatedMessage;

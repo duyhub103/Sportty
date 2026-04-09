@@ -33,16 +33,16 @@ class MessageResponseDTO {
         this.isRead = message.isRead;
         this.createdAt = message.createdAt;
 
-        // xử lý cho chat nhóm: nếu senderId đã được móc (populate) sang bảng User
-        if (message.senderId && typeof message.senderId === 'object') {
+        // Mặc định senderId là Object do Repo đã bắt buộc populate
+        if (message.senderId) {
+            this.senderId = message.senderId._id || message.senderId;
             this.sender = {
                 id: message.senderId._id,
                 displayName: message.senderId.displayName || message.senderId.fullName || 'Unknown',
                 avatar: message.senderId.avatar || ''
             };
-            this.senderId = message.senderId._id; // Giữ lại ID thô cho chat 1-1 dùng
         } else {
-            this.senderId = message.senderId;
+            this.senderId = null;
             this.sender = null;
         }
     }
