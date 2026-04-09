@@ -8,5 +8,6 @@ router.use(protect); // Bắt buộc đăng nhập
 router.post('/messages', chatController.sendMessage);
 router.get('/matches', chatController.getMatches);
 router.get('/messages/:matchId', chatController.getMessages);
+router.delete('/messages/:id', chatController.deleteMessage);
 
 module.exports = router;

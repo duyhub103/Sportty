@@ -51,6 +51,23 @@ class MessageService {
 
     // gửi tin nhắn (1-1 và Chat Nhóm)
     async sendMessage(senderId, conversationId, type, content, contentType, io) {
+        if (type === 'PRIVATE') {
+            const match = await matchRepository.getMatchById(conversationId);
+            
+            // Kiểm tra Match có tồn tại không, và người gửi có nằm trong mảng users của Match không
+            if (!match || !match.users.some(id => id.toString() === senderId.toString())) {
+                const error = new Error('Match not found or permission denied');
+                error.statusCode = 403;
+                throw error;
+            }
+        } else if (type === 'GROUP') {
+            const team = await teamRepository.getTeamById(conversationId);
+            if (!team || !team.members.some(m => m.userId?._id.toString() === senderId.toString())) {
+                const error = new Error('Team not found or permission denied');
+                error.statusCode = 403;
+                throw error;
+            }
+        }
         // Lưu tin nhắn vào DB
         const newMessage = await messageRepository.createMessage({
             conversationId,
@@ -83,6 +100,33 @@ class MessageService {
         }
 
         return populatedMessage;
+    }
+
+    async deleteMessage(messageId, conversationId, type) {
+        // Xóa tin nhắn khỏi DB
+        await messageRepository.deleteById(messageId);
+
+        // Móc tin nhắn sát ngay trước đó lên
+        const lastMsg = await messageRepository.getLatestMessage(conversationId);
+
+        // Nếu còn tin nhắn thì lấy nội dung, nếu hết sạch thì gán chuỗi rỗng
+        const lastMessageText = lastMsg ? lastMsg.content : "";
+        const lastMessageTime = lastMsg ? lastMsg.createdAt : null;
+
+        // Cập nhật lại phòng Chat
+        if (type === 'PRIVATE') {
+            await matchRepository.updateMatch(conversationId, {
+                lastMessage: lastMessageText,
+                lastMessageTime: lastMessageTime
+            });
+        } else if (type === 'GROUP') {
+            await teamRepository.updateTeam(conversationId, {
+                lastMessage: lastMessageText,
+                lastMessageTime: lastMessageTime
+            });
+        }
+
+        return { message: "Message deleted successfully" };
     }
 }
 

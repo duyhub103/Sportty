@@ -47,6 +47,16 @@ class ChatController {
         // Trả về DTO
         res.success(new MessageResponseDTO(message), 'Message sent successfully', 201);
     });
+
+    // DELETE /api/messages/:id
+    deleteMessage = asyncHandler(async (req, res) => {
+        const messageId = req.params.id;
+        const { conversationId, type } = req.body; // Gửi kèm id phòng và loại phòng (PRIVATE/GROUP) từ Client
+
+        await messageService.deleteMessage(messageId, conversationId, type);
+        
+        res.success(null, 'Message deleted and match updated successfully');
+    });
 }
 
 module.exports = new ChatController();

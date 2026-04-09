@@ -24,6 +24,15 @@ class MessageRepository {
         .skip(skip)
         .limit(limit);
     }
+
+    async deleteById(messageId) {
+        return await Message.findByIdAndDelete(messageId);
+    }
+
+    // Lấy tin nhắn gần nhất của 1 phòng (dùng để update lastMessage sau khi xóa)
+    async getLatestMessage(conversationId) {
+        return await Message.findOne({ conversationId }).sort({ createdAt: -1 });
+    }
 }
 
 module.exports = new MessageRepository();
