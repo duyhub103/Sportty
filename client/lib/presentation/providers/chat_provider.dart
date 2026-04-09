@@ -55,6 +55,37 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  // xóa tin nhắn
+  Future<bool> deleteMessage(String messageId, String matchId) async {
+    final index = _currentMessages.indexWhere((msg) => msg.id == messageId);
+    if (index == -1) return false;
+    
+    final backupMsg = _currentMessages[index];
+
+    try {
+      // Xóa ảo trên UI
+      // todo:Lấy index để API lỗi thì nhét lại
+      _currentMessages.removeWhere((msg) => msg.id == messageId);
+      notifyListeners();
+
+      // Gọi API để xóa dưới Database
+      // Truyền cứng 'PRIVATE' vì đang ở luồng chat 1-1
+      await _repository.deleteMessage(messageId, matchId, 'PRIVATE');
+      
+      // Gọi hàm fetchInbox() để cập nhật lại lastMessage ở màn hình ngoài
+      fetchInbox(); 
+      
+      return true;
+    } catch (e) {
+      print('Lỗi xóa tin nhắn: $e');
+      // Khôi phục lại tin nhắn trên UI
+      _currentMessages.insert(index, backupMsg);
+      notifyListeners();
+      
+      return false;
+    }
+  }
+
   // kết nối SOCKET.IO
   void setupChatSocket(String matchId) {
     // Lấy socket xài chung của toàn App ra

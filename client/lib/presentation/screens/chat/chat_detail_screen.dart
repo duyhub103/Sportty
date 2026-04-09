@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../../data/models/chat_model.dart';
@@ -82,7 +83,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   // check tin nhắn: ID người gửi KHÁC với ID của partner
                   final isMe = message.senderId != widget.matchInfo.partnerId;
 
-                  return _buildMessageBubble(message, isMe);
+                  return _buildMessageBubble(context, message, isMe, provider);
                 },
               ),
             ),
@@ -96,34 +97,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   // Giao diện Bong bóng chat
-  Widget _buildMessageBubble(MessageModel message, bool isMe) {
+  Widget _buildMessageBubble(BuildContext context, MessageModel message, bool isMe, ChatProvider provider) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.green : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 20),
+      child: GestureDetector(
+        onLongPress: isMe ? () => _showDeleteBottomSheet(context, message, provider) : null,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isMe ? Colors.green : Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isMe ? 20 : 0),
+              bottomRight: Radius.circular(isMe ? 0 : 20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              )
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            color: isMe ? Colors.white : Colors.black87,
-            fontSize: 16,
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          child: Text(
+            message.content,
+            style: TextStyle(
+              color: isMe ? Colors.white : Colors.black87,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
@@ -174,5 +178,62 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       provider.sendMessage(widget.matchInfo.id, text);
       _messageController.clear();
     }
+  }
+
+  void _showDeleteBottomSheet(BuildContext context, MessageModel message, ChatProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('Xóa tin nhắn này', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              onTap: () {
+                Navigator.pop(context); // Đóng BottomSheet trước
+                _showConfirmDialog(context, message, provider); // Mở Confirm Dialog
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showConfirmDialog(BuildContext context, MessageModel message, ChatProvider provider) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: const Text('Bạn có chắc chắn muốn xóa tin nhắn này không? Hành động này không thể hoàn tác.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext); // Tắt Dialog
+              final success = await provider.deleteMessage(message.id, widget.matchInfo.id);
+
+              if (success) {
+                Fluttertoast.showToast(msg: "Đã xóa tin nhắn");
+              } else {
+                Fluttertoast.showToast(msg: "Xóa thất bại!", backgroundColor: Colors.red);
+              }
+            },
+            child: const Text('Xóa ngay', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }

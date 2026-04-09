@@ -33,4 +33,10 @@ class ChatRepository {
     }
     throw Exception(response.data['message']);
   }
+
+  // Xóa tin nhắn
+  Future<bool> deleteMessage(String messageId, String matchId, String type) async {
+    final response = await _chatService.deleteMessage(messageId, matchId, type);
+    return response.data['success'] == true;
+  }
 }

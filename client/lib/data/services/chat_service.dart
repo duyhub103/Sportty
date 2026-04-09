@@ -23,4 +23,15 @@ class ChatService {
       },
     );
   }
+
+  // Xóa tin nhắn
+  Future<Response> deleteMessage(String messageId, String matchId, String type) async {
+    return await ApiClient.dio.delete(
+      '/messages/$messageId',
+      data: {
+        'conversationId': matchId,
+        'type': type,
+      },
+    );
+  }
 }
