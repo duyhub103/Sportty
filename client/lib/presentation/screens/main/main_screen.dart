@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_sport_app/presentation/providers/chat_provider.dart';
+import 'package:provider/provider.dart';
+
 
 // Import 3 màn hình con
 import '../discover/discover_screen.dart';
@@ -35,10 +38,14 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          // Khi bấm vào icon, cập nhật lại biến _currentIndex để chuyển màn hình
-          setState(() {
-            _currentIndex = index;
+          setState(() { 
+            _currentIndex = index;  // Khi bấm vào icon, cập nhật lại biến _currentIndex để chuyển màn hình
           });
+
+          if (index == 1) {
+            // Provider gọi lại API lấy danh sách match mới nhất ngay lập tức
+            context.read<ChatProvider>().fetchInbox();
+          }
         },
         // Cấu hình UI 
         selectedItemColor: Colors.teal,
@@ -48,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
         
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
+            icon: Icon(Icons.explore), // home_filled
             label: 'Khám phá',
           ),
           BottomNavigationBarItem(

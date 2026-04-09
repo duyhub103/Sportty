@@ -5,6 +5,8 @@ import '../../providers/discover_provider.dart';
 import '../../../data/models/nearby_user_model.dart';
 import '../../providers/profile_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../../../data/models/chat_model.dart';
+import '../chat/chat_detail_screen.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -203,14 +205,42 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     provider.handleSwipe(userSwiped.id, type).then((result) {
       // nếu match thành công
       if (result != null && result.isMatch) {
-        _showMatchDialog(userSwiped);
+        _showMatchDialog(userSwiped, result.matchId!);
       }
     });
 
     return true; // Cho phép thẻ bay đi
   }
 
-  void _showMatchDialog(NearbyUserModel matchUser) {
+  // void _showMatchDialog(NearbyUserModel matchUser) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       backgroundColor: Colors.pinkAccent,
+  //       title: const Text('It\'s a Match! 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+  //       content: Text(
+  //         'Bạn và ${matchUser.displayName} đã thích nhau. Vào nhắn tin rủ kèo ngay!',
+  //         style: const TextStyle(color: Colors.white),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context), // Tắt popup
+  //           child: const Text('Tiếp tục quẹt', style: TextStyle(color: Colors.white)),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () {
+  //             Navigator.pop(context); 
+  //             Navigator.push(context, MaterialPageRoute(builder: (_) => ChatDetailScreen(matchId: result.matchId)));
+  //           },
+  //           style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+  //           child: const Text('Nhắn tin', style: TextStyle(color: Colors.pinkAccent)),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  void _showMatchDialog(NearbyUserModel matchUser, String matchId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -222,17 +252,30 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Tắt popup
+            onPressed: () => Navigator.pop(context),
             child: const Text('Tiếp tục quẹt', style: TextStyle(color: Colors.white)),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              // TODO: Nhảy sang màn hình Chat với matchUser.id
-              Fluttertoast.showToast(msg: "Đang mở chat với ${matchUser.displayName}...");
-              
-              // TODO
-              // Navigator.push(context, MaterialPageRoute(builder: (_) => ChatDetailScreen(matchId: result.matchId)));
+              Navigator.pop(context); 
+
+              // TẠO ĐỐI TƯỢNG MatchModel TẠM THỜI ĐỂ TRUYỀN ĐI
+              final tempMatchInfo = MatchModel(
+                id: matchId,
+                lastMessage: '',
+                updatedAt: DateTime.now(),
+                partnerId: matchUser.id,
+                partnerName: matchUser.displayName,
+                partnerAvatar: matchUser.avatar ?? '',
+              );
+
+              // CHUYỂN TRANG VỚI THAM SỐ ĐÚNG 👇
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => ChatDetailScreen(matchInfo: tempMatchInfo)
+                )
+              );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             child: const Text('Nhắn tin', style: TextStyle(color: Colors.pinkAccent)),

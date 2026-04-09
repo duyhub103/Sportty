@@ -46,10 +46,13 @@ class ChatProvider extends ChangeNotifier {
     try {
       final newMessage = await _repository.sendMessage(matchId, content);
       
+      // check song song với tin nhắn mới nhận từ Socket.IO để tránh bị duplicate
+      bool isDuplicate = _currentMessages.any((msg) => msg.id == newMessage.id);
       // Thêm tạm tin nhắn vào list để UI hiện ngay
-      _currentMessages.insert(0, newMessage); 
-      notifyListeners();
-
+      if (!isDuplicate) {
+        _currentMessages.insert(0, newMessage);
+        notifyListeners();
+      }
     } catch (e) {
       print('Lỗi gửi tin nhắn: $e');
     }
@@ -102,10 +105,15 @@ class ChatProvider extends ChangeNotifier {
       socket.on('receive_message', (data) {
         print('Có tin nhắn 1-1 mới: $data');
         final newMsg = MessageModel.fromJson(data);
+
+        // chặn duplicate
+        bool isDuplicate = _currentMessages.any((msg) => msg.id == newMsg.id);
         
-        // Nhét tin nhắn mới lên đầu danh sách để UI hiện ngay
-        _currentMessages.insert(0, newMsg);
-        notifyListeners();
+        // Nhét tin nhắn mới lên đầu danh sách để UI hiện ngay (tin nhắn ảo)
+        if (!isDuplicate) {
+          _currentMessages.insert(0, newMsg);
+          notifyListeners();
+        }
       });
     }
   }
