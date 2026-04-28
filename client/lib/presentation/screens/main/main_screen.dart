@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 // Import 3 màn hình con
 import '../discover/discover_screen.dart';
 import '../chat/chat_main_screen.dart';
+import '../team/team_list_screen.dart';
 import '../profile/profile_main_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const DiscoverScreen(),
     const ChatMainScreen(),
+    const TeamListScreen(),
     const ProfileMainScreen(),
   ];
 
@@ -61,6 +63,10 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
             label: 'Trò chuyện',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.groups),
+            label: 'Đội',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

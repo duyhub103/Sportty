@@ -19,7 +19,7 @@ class SocketClient {
     if (_socket != null && _socket!.connected) return; // Đã kết nối thì thôi
 
     // địa chỉ ip wifi của máy tính
-    _socket = IO.io('http://192.168.1.5:3000', IO.OptionBuilder()
+    _socket = IO.io('http://192.168.1.2:3000', IO.OptionBuilder()
       .setTransports(['websocket'])
       .disableAutoConnect()
       .build());
