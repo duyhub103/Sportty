@@ -7,23 +7,34 @@ class TeamRepository {
         return await newTeam.populate('members.userId', 'fullName displayName avatar');   
     }
 
+    async getMyTeams(userId) {
+        return await Team.find({
+            'members.userId': userId
+        })
+        .populate('members.userId', 'displayName avatar')
+        .lean();
+    }
+
     // Lấy danh sách Đội (tìm kiếm theo tên và lọc theo môn)
-    async getTeams(filter = {}) {
+    async getTeams(filter = {}, skip = 0, limit = 20) {
         const query = {};
-        
-        // Nếu client gửi lên môn thể thao (VD: Football)
+
         if (filter.sport) query.sport = filter.sport;
-        
-        // Nếu client gõ tìm kiếm (VD: "Manchester")
+
         if (filter.keyword) {
-            query.name = { $regex: filter.keyword, $options: 'i' }; // 'i' là không phân biệt hoa/thường
+            query.name = { $regex: filter.keyword, $options: 'i' };
         }
-        
+
+        if (filter.excludeUserId) {
+            query['members.userId'] = { $ne: filter.excludeUserId };
+        }
+
         return await Team.find(query)
-            .populate('members.userId', 'fullName displayName avatar') // Kéo theo info thành viên
+            .populate('members.userId', 'fullName displayName avatar')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 }); // Mới nhất lên đầu
+            .sort({ createdAt: -1 })
+            .lean();
     }
 
     // Lấy chi tiết 1 đội

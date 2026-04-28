@@ -23,6 +23,11 @@ class TeamService {
         return await teamRepository.getTeams(filter, skip, limit);
     }
 
+    // Lấy danh sách đội của user đang đăng nhập
+    async getMyTeams(userId) {
+        return await teamRepository.getMyTeams(userId);
+    }
+
     // Lấy chi tiết đội
     async getTeamById(teamId) {
         const team = await teamRepository.getTeamById(teamId);

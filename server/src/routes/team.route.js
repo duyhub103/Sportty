@@ -11,6 +11,7 @@ router.use(protect);
 
 router.post('/', teamController.createTeam);                // Tạo đội
 router.get('/', teamController.getTeams);                   // Tìm đội
+router.get('/my-teams', teamController.getMyTeams);
 router.get('/:id', teamController.getTeamById);             // Xem chi tiết đội
 router.post('/:id/join', teamController.requestToJoin);     // Xin gia nhập
 router.put('/:id/requests', teamController.handleJoinRequest); // Duyệt yêu cầu
