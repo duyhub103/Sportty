@@ -90,7 +90,7 @@ class TeamService {
     String action, // 'APPROVE' | 'REJECT'
   ) async {
     return await ApiClient.dio.put('/teams/$teamId/requests', data: {
-      'userId': requestUserId,
+      'targetUserId': requestUserId,
       'action': action,
     });
   }

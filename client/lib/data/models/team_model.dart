@@ -3,7 +3,7 @@ class TeamMemberModel {
   final String id;
   final String displayName;
   final String? avatar;
-  final String role; // 'Captain' | 'Vice Captain' | 'Member'
+  final String role;
 
   TeamMemberModel({
     required this.id,
@@ -12,16 +12,28 @@ class TeamMemberModel {
     required this.role,
   });
 
+  // Dùng cho members chính thức: { user: {id, displayName, avatar}, role, joinedAt }
   factory TeamMemberModel.fromJson(Map<String, dynamic> json) {
-    // Server trả về { user: {id, displayName, avatar}, role, joinedAt }
     final userInfo = json['user'] as Map<String, dynamic>? ?? {};
     return TeamMemberModel(
       id: userInfo['id'] ?? '',
       displayName: userInfo['displayName'] ?? 'Người dùng',
-      avatar: userInfo['avatar']?.toString().isNotEmpty == true 
-          ? userInfo['avatar'] 
+      avatar: userInfo['avatar']?.toString().isNotEmpty == true
+          ? userInfo['avatar']
           : null,
       role: json['role'] ?? 'MEMBER',
+    );
+  }
+
+  // Dùng cho pendingRequests: { id, displayName, avatar }
+  factory TeamMemberModel.fromPending(Map<String, dynamic> json) {
+    return TeamMemberModel(
+      id: json['id']?.toString() ?? '',
+      displayName: json['displayName'] ?? 'Người dùng',
+      avatar: json['avatar']?.toString().isNotEmpty == true
+          ? json['avatar']
+          : null,
+      role: 'PENDING',
     );
   }
 }
@@ -56,7 +68,7 @@ class TeamModel {
   }
 }
 
-// Model chi tiết đội (dùng cho màn hình detail, có thêm members)
+// Model chi tiết đội (dùng cho màn hình detail)
 class TeamDetailModel {
   final String id;
   final String name;
@@ -64,6 +76,7 @@ class TeamDetailModel {
   final String? avatar;
   final double fund;
   final List<TeamMemberModel> members;
+  final List<TeamMemberModel> pendingRequests; 
 
   TeamDetailModel({
     required this.id,
@@ -72,6 +85,7 @@ class TeamDetailModel {
     this.avatar,
     required this.fund,
     required this.members,
+    required this.pendingRequests, 
   });
 
   factory TeamDetailModel.fromJson(Map<String, dynamic> json) {
@@ -85,10 +99,13 @@ class TeamDetailModel {
               ?.map((e) => TeamMemberModel.fromJson(e))
               .toList() ??
           [],
+      pendingRequests: (json['pendingRequests'] as List<dynamic>?) 
+              ?.map((e) => TeamMemberModel.fromPending(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
-  // Helper: lấy role của currentUser trong đội này
   String? getRoleOf(String userId) {
     try {
       return members.firstWhere((m) => m.id == userId).role;

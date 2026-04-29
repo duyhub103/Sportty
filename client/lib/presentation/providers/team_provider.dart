@@ -277,8 +277,8 @@ class TeamProvider extends ChangeNotifier {
     });
 
     // Thông báo
-    socket.off('notification');
-    socket.on('notification', (data) {
+    socket.off('receive_notification');
+    socket.on('receive_notification', (data) {
       final notif = NotificationModel.fromJson(data);
       _notifications.insert(0, notif);
       notifyListeners();
@@ -290,8 +290,25 @@ class TeamProvider extends ChangeNotifier {
     if (socket == null) return;
     socket.off('team_message');
     socket.off('new_activity');
-    socket.off('notification');
+    socket.off('receive_notification');
     socket.off('activity_updated');
+  }
+
+  void setupGlobalNotificationSocket() {
+    final socket = SocketClient().socket;
+    if (socket == null) return;
+
+    socket.off('receive_notification');
+    socket.on('receive_notification', (data) {
+      final notif = NotificationModel.fromJson(data);
+      _notifications.insert(0, notif);
+      notifyListeners();
+    });
+
+    socket.off('team_joined');
+    socket.on('team_joined', (data) {
+      fetchMyTeams();
+    });
   }
 
   // --- NOTIFICATIONS ---

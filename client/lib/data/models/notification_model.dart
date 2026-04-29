@@ -1,28 +1,53 @@
+class NotificationSender {
+  final String id;
+  final String displayName;
+  final String? avatar;
+
+  NotificationSender({
+    required this.id,
+    required this.displayName,
+    this.avatar,
+  });
+
+  factory NotificationSender.fromJson(Map<String, dynamic> json) {
+    return NotificationSender(
+      id: json['id']?.toString() ?? '',
+      displayName: json['displayName'] ?? 'Hệ thống',
+      avatar: json['avatar'],
+    );
+  }
+}
+
 class NotificationModel {
   final String id;
-  final String type; // 'JOIN_REQUEST' | 'JOIN_APPROVED' | 'NEW_ACTIVITY'
-  final String message;
+  final String type;
+  final String content;     
   final bool isRead;
   final DateTime createdAt;
-  final String? teamId;
+  final String? relatedId;  
+  final NotificationSender? sender;
 
   NotificationModel({
     required this.id,
     required this.type,
-    required this.message,
+    required this.content,
     required this.isRead,
     required this.createdAt,
-    this.teamId,
+    this.relatedId,
+    this.sender,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       type: json['type'] ?? '',
-      message: json['message'] ?? '',
+      content: json['content'] ?? '',
       isRead: json['isRead'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      teamId: json['teamId'],
+      relatedId: json['relatedId']?.toString(),
+      sender: json['sender'] != null
+          ? NotificationSender.fromJson(json['sender'])
+          : null,
     );
   }
 }

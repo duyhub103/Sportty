@@ -105,9 +105,11 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
       builder: (context, provider, _) {
         final team = provider.currentTeam;
 
-        final isMember =
-            team == null ? false : _isCurrentUserMember(team, currentUserId);
+        final isMember = team == null ? false : _isCurrentUserMember(team, currentUserId);
         final isLeader = team?.isLeader(currentUserId) ?? false;
+        // Thêm tạm vào build() sau dòng final isLeader = ...
+        print('currentUserId: $currentUserId');
+        print('members: ${team?.members.map((m) => m.id).toList()}');
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -565,8 +567,168 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
     if (value == 'leave') {
       Fluttertoast.showToast(msg: 'Chức năng đang phát triển');
     } else if (value == 'members') {
-      _tabController.animateTo(1);
+      _showPendingRequestsSheet(context, provider);
     }
+  }
+
+  void _showPendingRequestsSheet(BuildContext context, TeamProvider provider) {
+    final team = provider.currentTeam;
+    if (team == null) return;
+
+    final pendingList = team.pendingRequests;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  const Text(
+                    'Chờ duyệt',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${pendingList.length}',
+                      style: TextStyle(
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: pendingList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Không có yêu cầu nào đang chờ',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: scrollController,
+                      itemCount: pendingList.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, indent: 72),
+                      itemBuilder: (ctx, index) {
+                        final user = pendingList[index];
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
+                          leading: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.orange[50],
+                            backgroundImage: user.avatar != null
+                                ? NetworkImage(user.avatar!)
+                                : null,
+                            child: user.avatar == null
+                                ? const Icon(Icons.person,
+                                    color: Colors.orange)
+                                : null,
+                          ),
+                          title: Text(user.displayName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: const Text('Đang chờ duyệt',
+                              style: TextStyle(color: Colors.orange)),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  final success = await provider
+                                      .handleJoinRequest(
+                                          team.id, user.id, 'APPROVE');
+                                  Fluttertoast.showToast(
+                                    msg: success
+                                        ? 'Đã duyệt thành viên'
+                                        : 'Có lỗi xảy ra',
+                                    backgroundColor:
+                                        success ? null : Colors.red,
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Duyệt',
+                                    style: TextStyle(fontSize: 12)),
+                              ),
+                              const SizedBox(width: 6),
+                              OutlinedButton(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  final success = await provider
+                                      .handleJoinRequest(
+                                          team.id, user.id, 'REJECT');
+                                  Fluttertoast.showToast(
+                                    msg: success
+                                        ? 'Đã từ chối'
+                                        : 'Có lỗi xảy ra',
+                                    backgroundColor:
+                                        success ? null : Colors.red,
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  side: const BorderSide(color: Colors.red),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Từ chối',
+                                    style: TextStyle(fontSize: 12)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   String _formatFund(double fund) {

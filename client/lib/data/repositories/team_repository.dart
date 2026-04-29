@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../models/team_model.dart';
 import '../models/activity_model.dart';
 import '../models/notification_model.dart';
@@ -93,13 +95,23 @@ class TeamRepository {
   }
 
   Future<bool> joinTeam(String teamId) async {
-    final response = await _teamService.joinTeam(teamId);
-    return response.data['success'] == true;
+    try {
+      final response = await _teamService.joinTeam(teamId);
+      return response.data['success'] == true;
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Có lỗi xảy ra';
+      throw Exception(message);
+    }
   }
 
   Future<bool> handleJoinRequest(String teamId, String userId, String action) async {
-    final response = await _teamService.handleJoinRequest(teamId, userId, action);
-    return response.data['success'] == true;
+    try {
+      final response = await _teamService.handleJoinRequest(teamId, userId, action);
+      return response.data['success'] == true;
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Có lỗi xảy ra';
+      throw Exception(message);
+    }
   }
 
   Future<List<MessageModel>> getTeamMessages(String teamId, {int page = 1}) async {

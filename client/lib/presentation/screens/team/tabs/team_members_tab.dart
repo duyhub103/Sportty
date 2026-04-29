@@ -25,7 +25,6 @@ class TeamMembersTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final member = team.members[index];
         final isCurrentUser = member.id == currentUserId;
-
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           leading: CircleAvatar(
@@ -38,10 +37,8 @@ class TeamMembersTab extends StatelessWidget {
           ),
           title: Row(
             children: [
-              Text(
-                member.displayName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text(member.displayName,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               if (isCurrentUser) ...[
                 const SizedBox(width: 6),
                 Container(
@@ -58,17 +55,18 @@ class TeamMembersTab extends StatelessWidget {
           ),
           subtitle: Text(
             _roleLabel(member.role),
-            style: TextStyle(color: _roleColor(member.role), fontWeight: FontWeight.w500),
+            style: TextStyle(
+                color: _roleColor(member.role), fontWeight: FontWeight.w500),
           ),
           trailing: _buildRoleIcon(member.role),
-          // Leader có thể bấm vào member để duyệt / đổi role
           onLongPress: (isLeader && !isCurrentUser)
-              ? () => _showMemberActions(context, member)
+              ? () => _showKickDialog(context, member)
               : null,
         );
       },
     );
   }
+    
 
   Widget _buildRoleIcon(String role) {
     if (role == 'CAPTAIN') {
@@ -81,21 +79,27 @@ class TeamMembersTab extends StatelessWidget {
 
   String _roleLabel(String role) {
     switch (role) {
-      case 'CAPTAIN': return 'Đội trưởng';
-      case 'VICE_CAPTAIN': return 'Đội phó';
-      default: return 'Thành viên';
+      case 'CAPTAIN':
+        return 'Đội trưởng';
+      case 'VICE_CAPTAIN':
+        return 'Đội phó';
+      default:
+        return 'Thành viên';
     }
   }
 
   Color _roleColor(String role) {
     switch (role) {
-      case 'CAPTAIN': return Colors.amber[700]!;
-      case 'VICE_CAPTAIN': return Colors.orange;
-      default: return Colors.grey;
+      case 'CAPTAIN':
+        return Colors.amber[700]!;
+      case 'VICE_CAPTAIN':
+        return Colors.orange;
+      default:
+        return Colors.grey;
     }
   }
 
-  void _showMemberActions(BuildContext context, TeamMemberModel member) {
+  void _showKickDialog(BuildContext context, TeamMemberModel member) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -108,21 +112,14 @@ class TeamMembersTab extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 member.displayName,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.how_to_reg, color: Colors.green),
-              title: const Text('Duyệt vào đội'),
-              onTap: () {
-                Navigator.pop(context);
-                _handleRequest(context, member.id, 'APPROVE');
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.person_remove, color: Colors.red),
-              title: const Text('Từ chối / Xóa khỏi đội',
+              title: const Text('Xóa khỏi đội',
                   style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
