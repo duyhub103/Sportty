@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/network/socket_client.dart';
 import '../../providers/team_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../../data/models/team_model.dart';
@@ -30,16 +31,33 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
   @override
   void initState() {
     super.initState();
-
     _tabController = TabController(length: 3, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TeamProvider>().fetchTeamDetail(widget.teamId);
+      final provider = context.read<TeamProvider>();
+      provider.fetchTeamDetail(widget.teamId);
+      provider.fetchActivities(widget.teamId, refresh: true);
+
+      SocketClient().initSocket(onConnected: () {
+      if (mounted) provider.setupTeamSocket(widget.teamId);
+    });
+    });
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      final provider = context.read<TeamProvider>();
+      if (_tabController.index == 0) {
+        provider.fetchActivities(widget.teamId, refresh: true);
+      }
+      if (_tabController.index == 1) {
+        provider.fetchTeamDetail(widget.teamId);
+      }
     });
   }
 
   @override
   void dispose() {
+    context.read<TeamProvider>().leaveTeamSocket(widget.teamId);
     _tabController.dispose();
     super.dispose();
   }

@@ -233,9 +233,9 @@ class TeamProvider extends ChangeNotifier {
   void setupTeamSocket(String teamId) {
     final socket = SocketClient().socket;
     if (socket == null) return;
+    socket.emit('join_team_chat', teamId);
 
-    socket.emit('join_team', teamId);
-
+    // Tin nhắn nhóm
     socket.off('team_message');
     socket.on('team_message', (data) {
       final newMsg = MessageModel.fromJson(data);
@@ -246,6 +246,37 @@ class TeamProvider extends ChangeNotifier {
       }
     });
 
+    //Lắng nghe bài đăng mới real-time
+    socket.off('new_activity');
+    socket.on('new_activity', (data) {
+      try {
+        final newActivity = ActivityModel.fromJson(data);
+        bool isDuplicate = _activities.any((a) => a.id == newActivity.id);
+        if (!isDuplicate) {
+          _activities.insert(0, newActivity);
+          notifyListeners();
+        }
+      } catch (e) {
+        print('Lỗi parse new_activity: $e');
+      }
+    });
+
+    socket.off('activity_updated');
+    socket.on('activity_updated', (data) {
+      try {
+        final updated = ActivityModel.fromJson(data);
+        // Tìm và thay thế activity cũ trong list
+        final index = _activities.indexWhere((a) => a.id == updated.id);
+        if (index != -1) {
+          _activities[index] = updated;
+          notifyListeners();
+        }
+      } catch (e) {
+        print('Lỗi parse activity_updated: $e');
+      }
+    });
+
+    // Thông báo
     socket.off('notification');
     socket.on('notification', (data) {
       final notif = NotificationModel.fromJson(data);
@@ -258,6 +289,9 @@ class TeamProvider extends ChangeNotifier {
     final socket = SocketClient().socket;
     if (socket == null) return;
     socket.off('team_message');
+    socket.off('new_activity');
+    socket.off('notification');
+    socket.off('activity_updated');
   }
 
   // --- NOTIFICATIONS ---

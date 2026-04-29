@@ -3,21 +3,27 @@ class ActivityOptionModel {
   final String id;
   final String label;
   final List<String> voterIds; // danh sách userId đã chọn option này
+  final int voteCount; // tổng số người đã chọn option này
 
   ActivityOptionModel({
     required this.id,
     required this.label,
     required this.voterIds,
+    required this.voteCount,
   });
 
   factory ActivityOptionModel.fromJson(Map<String, dynamic> json) {
     return ActivityOptionModel(
       id: json['id'] ?? '',
       label: json['label'] ?? '',
-      voterIds: (json['voterIds'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      voteCount: json['voteCount'] ?? 0,
+      voterIds: (json['voters'] as List<dynamic>?)
+              ?.map((e) {
+                if (e is Map) return e['id']?.toString() ?? '';
+                return e.toString();
+              })
+              .where((id) => id.isNotEmpty)
+              .toList() ?? [],
     );
   }
 }
@@ -45,19 +51,31 @@ class ActivityModel {
   });
 
   factory ActivityModel.fromJson(Map<String, dynamic> json) {
-    final author = json['author'] ?? {};
+    final creator = json['createdBy'];
+    
+    String authorId = '';
+    String authorName = 'Người dùng';
+    String? authorAvatar;
+
+    // creator có thể là Map hoặc null
+    if (creator is Map<String, dynamic>) {
+      authorId = creator['id']?.toString() ?? '';
+      authorName = creator['displayName']?.toString() ?? 'Người dùng';
+      final av = creator['avatar']?.toString() ?? '';
+      authorAvatar = av.isNotEmpty ? av : null;
+    }
+
     return ActivityModel(
       id: json['id'] ?? '',
       type: json['type'] ?? 'NOTICE',
       content: json['content'] ?? '',
-      authorId: author['id'] ?? '',
-      authorName: author['displayName'] ?? 'Người dùng',
-      authorAvatar: author['avatar'],
+      authorId: authorId,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      options: (json['options'] as List<dynamic>?)
+      options: (json['voteOptions'] as List<dynamic>?)
               ?.map((e) => ActivityOptionModel.fromJson(e))
-              .toList() ??
-          [],
+              .toList() ?? [],
     );
   }
 }
