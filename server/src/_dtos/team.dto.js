@@ -53,6 +53,28 @@ class TeamResponseDTO{
         }else {
             this.members = [];
         }
+
+        // Danh sách chờ duyệt
+        if (team.pendingRequests && Array.isArray(team.pendingRequests)) {
+            this.pendingRequests = team.pendingRequests.map(u => {
+                // Đã populate (là object user)
+                if (typeof u === 'object' && u !== null && (u._id || u.displayName)) {
+                    return {
+                        id: (u._id || u.id).toString(),
+                        displayName: u.displayName || u.fullName || 'Người dùng',
+                        avatar: u.avatar || ''
+                    };
+                }
+                // Chưa populate (chỉ là ObjectId string)
+                return {
+                    id: u.toString(),
+                    displayName: 'Người dùng',
+                    avatar: ''
+                };
+            });
+        } else {
+            this.pendingRequests = [];
+        }
     }
 }
 

@@ -46,7 +46,10 @@ class TeamService {
         }
 
         // check đã gửi yêu cầu
-        const isPending = team.pendingRequests.includes(userId);
+        const isPending = team.pendingRequests.some(u => {
+            const id = (u._id || u).toString();
+            return id === userId.toString();
+        });
         if (isPending) {
             throw Object.assign(new Error('Your request is already pending approval'), { statusCode: 400 });
         }
@@ -83,12 +86,19 @@ class TeamService {
         }
 
         // check xem user có trong phòng chờ
-        if (!team.pendingRequests.includes(targetUserId)) {
+        const isPending = team.pendingRequests.some(u => {
+            const id = (u._id || u).toString();
+            return id === targetUserId.toString();
+        });
+        if (!isPending) {
             throw Object.assign(new Error('This user has not requested to join'), { statusCode: 400 });
         }
 
         // Xử lý duyệt hoặc từ chối
         if (action === 'APPROVE') {
+            if (io) {
+                io.to(targetUserId.toString()).emit('team_joined', { teamId: team._id });
+            }
             // Rút khỏi phòng chờ, đẩy vào danh sách chính thức
             await teamRepository.removePendingRequest(teamId, targetUserId);
             await teamRepository.addMember(teamId, targetUserId, 'MEMBER');

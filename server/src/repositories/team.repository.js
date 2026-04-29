@@ -40,7 +40,8 @@ class TeamRepository {
     // Lấy chi tiết 1 đội
     async getTeamById(teamId) {
         return await Team.findById(teamId)
-            .populate('members.userId', 'fullName displayName avatar');
+            .populate('members.userId', 'fullName displayName avatar')
+            .populate('pendingRequests', 'displayName fullName avatar');
     }
 
     // Thêm 1 thành viên vào mảng members
