@@ -81,7 +81,23 @@ class ActivityService {
             }
         }
 
-        return await activityRepository.createActivity(newActivityData);
+        const saved = await activityRepository.createActivity(newActivityData);
+
+        // Populate lại để có đủ thông tin trả về và emit
+        const TeamActivity = require('../models/TeamActivity');
+        const populated = await TeamActivity.findById(saved._id)
+            .populate('createdBy', 'fullName displayName avatar')
+            .populate('voteOptions.voters', 'fullName displayName avatar');
+
+        const { ActivityResponseDTO } = require('../_dtos/activity.dto');
+
+        // Emit real-time cho cả phòng team
+        if (io) {
+            console.log('🟢 Emitting new_activity to room:', teamId.toString());
+            io.to(teamId.toString()).emit('new_activity', new ActivityResponseDTO(populated));
+        }
+
+        return populated;
     }
 
     // Lấy danh sách Bảng tin
@@ -91,7 +107,7 @@ class ActivityService {
     }
 
     // User tương tác (Vote hoặc Điểm danh)
-    async interactActivity(activityId, userId, optionId) {
+    async interactActivity(activityId, userId, optionId, io) {
         const activity = await activityRepository.getActivityById(activityId);
         
         if (!activity) {
@@ -126,6 +142,18 @@ class ActivityService {
 
         // Lưu lại vào DB
         await activityRepository.saveActivity(activity);
+
+        if (io) {
+            const TeamActivity = require('../models/TeamActivity');
+            const populated = await TeamActivity.findById(activityId)
+                .populate('createdBy', 'fullName displayName avatar')
+                .populate('voteOptions.voters', 'fullName displayName avatar');
+
+            const { ActivityResponseDTO } = require('../_dtos/activity.dto');
+            const teamId = populated.teamId.toString();
+
+            io.to(teamId).emit('activity_updated', new ActivityResponseDTO(populated));
+        }
         
         return { message: 'Vote recorded successfully' };
     }

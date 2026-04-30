@@ -13,6 +13,8 @@ import 'data/services/discover_service.dart';
 import 'data/repositories/discover_repository.dart';
 import 'data/services/chat_service.dart';
 import 'data/repositories/chat_repository.dart';
+import 'data/services/team_service.dart';
+import 'data/repositories/team_repository.dart';
 
 // Import Presentation Layer
 import 'presentation/providers/auth_provider.dart';
@@ -21,6 +23,7 @@ import 'presentation/screens/main/main_screen.dart';
 import 'presentation/providers/profile_provider.dart';
 import 'presentation/providers/discover_provider.dart';
 import 'presentation/providers/chat_provider.dart';
+import 'presentation/providers/team_provider.dart';
 
 
 void main() async {
@@ -47,6 +50,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProfileProvider(profileRepository)),
         ChangeNotifierProvider(create: (_) => DiscoverProvider(discoverRepository)),
         ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
+        ChangeNotifierProvider(
+          create: (_) => TeamProvider(
+            TeamRepository(TeamService()),
+          ),
+        ),
       ],
       child: const SporttyApp(),
     ),

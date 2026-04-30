@@ -34,20 +34,31 @@ class MessageModel {
   final String id;
   final String content;
   final String senderId;
+  final String senderName;
+  final String senderAvatar;
   final DateTime createdAt;
 
   MessageModel({
     required this.id,
     required this.content,
     required this.senderId,
+    required this.senderName,
+    required this.senderAvatar,
     required this.createdAt,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
+    final senderRaw = json['sender'];
+    final sender = senderRaw is Map
+        ? Map<String, dynamic>.from(senderRaw)
+        : <String, dynamic>{};
+
     return MessageModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       content: json['content'] ?? '',
-      senderId: json['senderId'] ?? '',
+      senderId: json['senderId']?.toString() ?? '',
+      senderName: sender['displayName'] ?? 'Người dùng',   
+      senderAvatar: sender['avatar'] ?? '',               
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
     );
   }

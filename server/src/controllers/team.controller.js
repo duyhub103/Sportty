@@ -14,12 +14,21 @@ class TeamController {
         // Trả về data đã qua DTO
         res.success(new TeamResponseDTO(team), 'Team created successfully', 201);
     });
+    
+    // GET /api/teams/my-teams (Lấy danh sách đội của tôi)
+    getMyTeams = asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        const teams = await teamService.getMyTeams(userId);
+        const result = teams.map(t => new TeamResponseDTO(t));
+        res.success(result, 'Get my teams successfully');
+    });
 
     // GET /api/teams (Lấy danh sách đội có bộ lọc)
     getTeams = asyncHandler(async (req, res) => {
         const filter = {
             sport: req.query.sport,
             keyword: req.query.keyword,
+            excludeUserId: req.user.id,
         };
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;

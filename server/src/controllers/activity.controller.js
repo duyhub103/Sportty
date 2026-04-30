@@ -32,6 +32,7 @@ class ActivityController {
         const userId = req.user.id;
         const { activityId } = req.params;
         const { optionId } = req.body; // Gửi lên từ Client
+        const io = req.app.get('io');
 
         if (!optionId) {
              const error = new Error('optionId is required');
@@ -39,7 +40,7 @@ class ActivityController {
              throw error;
         }
 
-        const result = await activityService.interactActivity(activityId, userId, optionId);
+        const result = await activityService.interactActivity(activityId, userId, optionId, io);
         res.success(null, result.message);
     });
 }

@@ -10,7 +10,7 @@ class ActivityRepository {
     }
 
     // Lấy danh sách Bảng tin của 1 đội
-    async getActivitiesByTeam(teamId) {
+    async getActivitiesByTeam(teamId, skip = 0, limit = 10) {
         return await TeamActivity.find({ teamId })
             .populate('createdBy', 'fullName displayName avatar') // Lấy người đăng
             .populate('voteOptions.voters', 'fullName displayName avatar') // Lấy danh sách người đã vote

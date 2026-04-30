@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 
 
 // Import 3 màn hình con
+import '../../../core/network/socket_client.dart';
+import '../../providers/team_provider.dart';
 import '../discover/discover_screen.dart';
 import '../chat/chat_main_screen.dart';
+import '../team/team_list_screen.dart';
 import '../profile/profile_main_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -16,6 +19,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TeamProvider>().setupGlobalNotificationSocket();
+    });
+  }
+
+  @override
+  void dispose() {
+    SocketClient().socket?.off('receive_notification');
+    SocketClient().socket?.off('team_joined');
+    super.dispose();
+  }
+
   // Biến lưu vị trí Tab đang được chọn (Mặc định 0 là Tab Khám phá)
   int _currentIndex = 0;
 
@@ -23,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const DiscoverScreen(),
     const ChatMainScreen(),
+    const TeamListScreen(),
     const ProfileMainScreen(),
   ];
 
@@ -53,7 +74,7 @@ class _MainScreenState extends State<MainScreen> {
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed, // Giữ các icon cố định, không bị nhún nhảy
         
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.explore), // home_filled
             label: 'Khám phá',
@@ -61,6 +82,16 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
             label: 'Trò chuyện',
+          ),
+          BottomNavigationBarItem(
+            icon: Consumer<TeamProvider>(
+              builder: (_, tp, __) => Badge(
+                isLabelVisible: tp.unreadCount > 0,
+                label: Text('${tp.unreadCount}'),
+                child: const Icon(Icons.groups),
+              ),
+            ),
+            label: 'Đội',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

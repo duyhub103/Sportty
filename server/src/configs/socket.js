@@ -16,6 +16,9 @@ module.exports = (io) => {
         socket.on('join_team_chat', (teamId) => {
             socket.join(teamId); 
             console.log(`Báo cáo: Socket ${socket.id} đã vào phòng Team: ${teamId}`);
+
+            const room = io.sockets.adapter.rooms.get(teamId);
+            console.log(`Phòng ${teamId} hiện có ${room ? room.size : 0} người`);
         });
     
         socket.on('join_notification', (userId) => {
