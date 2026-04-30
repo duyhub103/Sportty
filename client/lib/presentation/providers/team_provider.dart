@@ -230,14 +230,30 @@ class TeamProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> sendTeamMessage(String teamId, String senderId, String content) async {
+    final socket = SocketClient().socket;
+    print('Socket: ${socket?.id}');
+    print('Connected: ${socket?.connected}');
+    print('Gửi: $content');
+
+    if (socket == null || content.trim().isEmpty) return;
+    
+    socket.emit('send_team_message', {
+      'senderId': senderId,
+      'teamId': teamId,
+      'content': content,
+    });
+  }
+
   void setupTeamSocket(String teamId) {
     final socket = SocketClient().socket;
     if (socket == null) return;
     socket.emit('join_team_chat', teamId);
 
     // Tin nhắn nhóm
-    socket.off('team_message');
-    socket.on('team_message', (data) {
+    socket.off('receive_team_message');
+    socket.on('receive_team_message', (data) {
+      print('receive_team_message data: $data');
       final newMsg = MessageModel.fromJson(data);
       bool isDuplicate = _teamMessages.any((m) => m.id == newMsg.id);
       if (!isDuplicate) {
@@ -288,7 +304,7 @@ class TeamProvider extends ChangeNotifier {
   void leaveTeamSocket(String teamId) {
     final socket = SocketClient().socket;
     if (socket == null) return;
-    socket.off('team_message');
+    socket.off('receive_team_message');
     socket.off('new_activity');
     socket.off('receive_notification');
     socket.off('activity_updated');

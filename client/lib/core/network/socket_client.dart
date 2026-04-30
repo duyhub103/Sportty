@@ -16,7 +16,7 @@ class SocketClient {
       return;
     }
 
-    _socket = IO.io('http://192.168.1.2:3000', IO.OptionBuilder()
+    _socket = IO.io('http://192.168.1.7:3000', IO.OptionBuilder()
       .setTransports(['websocket'])
       .disableAutoConnect()
       .build());
