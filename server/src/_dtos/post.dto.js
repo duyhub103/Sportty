@@ -13,6 +13,7 @@ class PostResponseDTO {
 
         // Đếm lượt tương tác
         this.likeCount = post.likes?.length || 0;
+        this.likedBy = (post.likes || []).map(id => id.toString());
         this.commentCount = post.comments?.length || 0;
 
         // Thông tin tác giả (đã populate từ bảng User)
