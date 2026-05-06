@@ -16,8 +16,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _bioController = TextEditingController();
   // Khai báo danh sách các môn thể thao có sẵn trong App
   final List<String> _availableSports = [
-    '⚽ Bóng đá', '🏃 Chạy bộ', '🏓 Bóng bàn', 
-    '🏸 Cầu lông', '🏀 Bóng rổ', '🏊 Bơi lội', '💪 Gym'
+    'Bóng đá', 'Chạy bộ', 'Bóng bàn', 'Cầu lông', 'Bóng rổ', 'Bơi lội', 'Gym'
   ];
 
   // Mảng chứa các môn người dùng đã chọn

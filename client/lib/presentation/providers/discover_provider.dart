@@ -38,4 +38,10 @@ class DiscoverProvider extends ChangeNotifier {
       return null;
     }
   }
+
+  // Xoá user khỏi danh sách sau khi đã quẹt
+  void removeUser(String userId) {
+    _users.removeWhere((u) => u.id == userId);
+    notifyListeners();
+  }
 }

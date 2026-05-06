@@ -24,12 +24,13 @@ class _TeamListScreenState extends State<TeamListScreen>
 
   final Map<String, String> _sportOptions = {
     'Tất cả': '',
-    'Bóng đá': 'Football',
-    'Bóng rổ': 'Basketball',
-    'Cầu lông': 'Badminton',
+    'Bóng đá': 'Bóng đá',
+    'Bóng rổ': 'Bóng rổ',
+    'Cầu lông': 'Cầu lông',
     'Tennis': 'Tennis',
-    'Bóng chuyền': 'Volleyball',
+    'Bóng chuyền': 'Bóng chuyền',
   };
+
 
   @override
   void initState() {

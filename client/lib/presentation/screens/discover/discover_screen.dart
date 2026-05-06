@@ -92,27 +92,38 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   // Giao diện Thẻ Bài
   Widget _buildCard(NearbyUserModel user) {
+    final hasAvatar = user.avatar != null && user.avatar!.isNotEmpty;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        image: DecorationImage(
-          image: NetworkImage(user.avatar ?? 'https://via.placeholder.com/400'),
-          fit: BoxFit.cover,
+        // Nền gradient tối làm fallback khi không có avatar
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1a1a2e), Color(0xFF16213e)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        image: hasAvatar
+            ? DecorationImage(
+                image: NetworkImage(user.avatar!),
+                fit: BoxFit.cover,
+              )
+            : null,
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, spreadRadius: 2),
         ],
       ),
       child: Container(
-        // Phủ Gradient đen từ dưới lên
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Colors.black87, Colors.transparent],
+          gradient: LinearGradient(
+            colors: [
+              Colors.black.withOpacity(hasAvatar ? 0.75 : 0.4),
+              Colors.transparent,
+            ],
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            stops: [0.0, 0.5],
+            stops: const [0.0, 0.6],
           ),
         ),
         padding: const EdgeInsets.all(20),
@@ -125,36 +136,69 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               children: [
                 Text(
                   user.displayName,
-                  style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Cách ${user.distance} km',
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    'Cách ${user.distance} km',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
                 ),
               ],
             ),
             if (user.bio != null && user.bio!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(user.bio!, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  user.bio!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: user.sports.map((sport) => 
-                Chip(
-                  label: Text(sport, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  side: BorderSide.none,
-                )
-              ).toList(),
-            ),
+            // Môn thể thao: thay chip emoji bằng chip text gọn gàng
+            if (user.sports.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: user.sports.map((sport) =>
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white30, width: 1),
+                    ),
+                    child: Text(
+                      sport,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                ).toList(),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+
 
   // Nút bấm bên dưới
   Widget _buildBottomButtons() {
@@ -200,6 +244,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     final userSwiped = provider.users[previousIndex];
     final type = direction == CardSwiperDirection.right ? 'LIKE' : 'DISLIKE';
+
+    provider.removeUser(userSwiped.id);
 
     // Gọi API ngầm trong nền
     provider.handleSwipe(userSwiped.id, type).then((result) {
