@@ -184,12 +184,38 @@ class TeamProvider extends ChangeNotifier {
   }
 
   Future<bool> interactActivity(String activityId, String optionId) async {
+    final actIndex = _activities.indexWhere((a) => a.id == activityId);
+  
+    // Nếu tìm thấy activity → Cập nhật UI ngay (optimistic)
+    if (actIndex != -1) {
+      final activity = _activities[actIndex];
+      final updatedOptions = activity.options.map((option) {
+        if (option.id == optionId) {
+          // Thêm 1 voteCount cho option được chọn
+          return ActivityOptionModel(
+            id: option.id,
+            label: option.label,
+            voteCount: option.voteCount + 1,
+            voterIds: option.voterIds, // giữ nguyên, chỉ cần UI cập nhật count
+          );
+        }
+        return option;
+      }).toList();
+      _activities[actIndex] = ActivityModel(
+        id: activity.id,
+        type: activity.type,
+        content: activity.content,
+        authorId: activity.authorId,
+        authorName: activity.authorName,
+        authorAvatar: activity.authorAvatar,
+        createdAt: activity.createdAt,
+        options: updatedOptions,
+      );
+      notifyListeners(); 
+    }
+    // Gọi API ngầm
     try {
-      final success = await _repository.interactActivity(activityId, optionId);
-      if (_currentTeam != null) {
-        fetchActivities(_currentTeam!.id, refresh: true);
-      }
-      return success;
+      return await _repository.interactActivity(activityId, optionId);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();

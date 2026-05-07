@@ -72,6 +72,31 @@ class PostModel {
     required this.comments,
   });
 
+  PostModel copyWith({
+    int? likeCount,
+    List<String>? likedBy,
+    int? commentCount,
+    List<PostCommentModel>? comments,
+  }) {
+    return PostModel(
+      id: id,
+      type: type,
+      content: content,
+      image: image,
+      createdAt: createdAt,
+      authorId: authorId,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
+      sport: sport,
+      location: location,
+      matchTime: matchTime,
+      likeCount: likeCount ?? this.likeCount,
+      likedBy: likedBy ?? this.likedBy,
+      commentCount: commentCount ?? this.commentCount,
+      comments: comments ?? this.comments,
+    );
+  }
+
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final author = json['author'] as Map<String, dynamic>? ?? {};
     final av = author['avatar']?.toString() ?? '';

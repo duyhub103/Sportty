@@ -75,13 +75,25 @@ class PostProvider extends ChangeNotifier {
 
   // Like / Bỏ Like — Cập nhật UI optimistic (không cần gọi lại API)
   Future<void> likePost(String postId, String currentUserId) async {
+    final index = _posts.indexWhere((p) => p.id == postId);
+      if (index == -1) return;
+      // Lưu lại post gốc để revert nếu lỗi
+      final originalPost = _posts[index];
+      final hasLiked = originalPost.likedBy.contains(currentUserId);
+      // Cập nhật UI (optimistic)
+      _posts[index] = originalPost.copyWith(
+      likeCount: hasLiked ? originalPost.likeCount - 1 : originalPost.likeCount + 1,
+      likedBy: hasLiked
+          ? originalPost.likedBy.where((id) => id != currentUserId).toList()
+          : [...originalPost.likedBy, currentUserId],
+    );
+    notifyListeners();
+    // Gọi API ngầm trong nền
     try {
       await _repository.likePost(postId);
-      // TODO: Nếu muốn cập nhật likeCount chính xác, gọi lại API lấy post đó.
-      // Vì đơn giản và đủ thời gian, tạm thời refresh toàn bộ list sau khi like.
-      await fetchPosts(refresh: true);
     } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      // Nếu API lỗi thì revert lại trạng thái cũ
+      _posts[index] = originalPost;
       notifyListeners();
     }
   }
