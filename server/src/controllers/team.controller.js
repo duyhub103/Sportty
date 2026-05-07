@@ -125,6 +125,13 @@ class TeamController {
         
         res.success(new TeamResponseDTO(updatedTeam), 'Team avatar updated successfully');
     });
+
+    // DELETE /api/teams/:id/leave
+    leaveTeam = asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        await teamService.leaveTeam(req.params.id, userId);
+        res.success(null, 'Rời đội thành công');
+    });
 }
 
 module.exports = new TeamController();

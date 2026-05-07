@@ -131,4 +131,9 @@ class TeamRepository {
     }
     throw Exception(response.data['message']);
   }
+
+  Future<bool> leaveTeam(String teamId) async {
+    final response = await _teamService.leaveTeam(teamId);
+    return response.data['success'] == true;
+  }
 }

@@ -34,6 +34,11 @@ class ChatRepository {
     throw Exception(response.data['message']);
   }
 
+  Future<bool> unmatch(String matchId) async {
+    final response = await _chatService.unmatch(matchId);
+    return response.data['success'] == true;
+  }
+
   // Xóa tin nhắn
   Future<bool> deleteMessage(String messageId, String matchId, String type) async {
     final response = await _chatService.deleteMessage(messageId, matchId, type);

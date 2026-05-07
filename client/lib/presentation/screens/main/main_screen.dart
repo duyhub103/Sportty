@@ -8,6 +8,7 @@ import '../../../core/network/socket_client.dart';
 import '../../providers/team_provider.dart';
 import '../discover/discover_screen.dart';
 import '../chat/chat_main_screen.dart';
+import '../feed/feed_screen.dart';
 import '../team/team_list_screen.dart';
 import '../profile/profile_main_screen.dart';
 
@@ -43,6 +44,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const DiscoverScreen(),
     const ChatMainScreen(),
+    const FeedScreen(),
     const TeamListScreen(),
     const ProfileMainScreen(),
   ];
@@ -82,6 +84,10 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
             label: 'Trò chuyện',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.newspaper_outlined),   // ← Icon tab mới
+            label: 'Bảng tin',
           ),
           BottomNavigationBarItem(
             icon: Consumer<TeamProvider>(

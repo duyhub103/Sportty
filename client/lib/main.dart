@@ -15,6 +15,8 @@ import 'data/services/chat_service.dart';
 import 'data/repositories/chat_repository.dart';
 import 'data/services/team_service.dart';
 import 'data/repositories/team_repository.dart';
+import 'data/services/post_service.dart';
+import 'data/repositories/post_repository.dart';
 
 // Import Presentation Layer
 import 'presentation/providers/auth_provider.dart';
@@ -24,6 +26,7 @@ import 'presentation/providers/profile_provider.dart';
 import 'presentation/providers/discover_provider.dart';
 import 'presentation/providers/chat_provider.dart';
 import 'presentation/providers/team_provider.dart';
+import 'presentation/providers/post_provider.dart';
 
 
 void main() async {
@@ -41,6 +44,10 @@ void main() async {
   final discoverRepository = DiscoverRepository(discoverService);
   final chatService = ChatService();
   final chatRepository = ChatRepository(chatService);
+  final teamService = TeamService();
+  final teamRepository = TeamRepository(teamService);
+  final postService = PostService();
+  final postRepository = PostRepository(postService);
 
   runApp(
     // Bọc MultiProvider ở ngoài cùng để sau này nhét các State vào
@@ -51,9 +58,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DiscoverProvider(discoverRepository)),
         ChangeNotifierProvider(create: (_) => ChatProvider(chatRepository)),
         ChangeNotifierProvider(
-          create: (_) => TeamProvider(
-            TeamRepository(TeamService()),
-          ),
+          create: (_) => TeamProvider(teamRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PostProvider(postRepository),
         ),
       ],
       child: const SporttyApp(),

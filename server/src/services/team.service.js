@@ -182,7 +182,25 @@ class TeamService {
         // Gọi Repository để lưu link ảnh mới vào db
         return await teamRepository.updateTeam(teamId, { avatar: avatarUrl });
     }
-    
+
+    async leaveTeam(teamId, userId) {
+        const team = await this.getTeamById(teamId);
+
+        // Kiểm tra user có trong đội không
+        const isMember = team.members.some(
+            m => m.userId?._id.toString() === userId.toString()
+        );
+        if (!isMember) {
+            throw Object.assign(new Error('Bạn không phải thành viên của đội này'), { statusCode: 400 });
+        }
+
+        // Captain không thể rời đội (phải giải tán hoặc chuyển quyền trước)
+        if (team.captainId?.toString() === userId.toString()) {
+            throw Object.assign(new Error('Captain không thể rời đội. Hãy chuyển quyền trước.'), { statusCode: 400 });
+        }
+
+        return await teamRepository.removeMember(teamId, userId);
+    }
 }
 
 module.exports = new TeamService();

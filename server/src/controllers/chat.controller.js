@@ -48,6 +48,13 @@ class ChatController {
         res.success(new MessageResponseDTO(message), 'Message sent successfully', 201);
     });
 
+    // DELETE /api/matches/:matchId
+    unmatch = asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        await matchService.unmatch(req.params.matchId, userId);
+        res.success(null, 'Đã hủy tương hợp');
+    });
+
     // DELETE /api/messages/:id
     deleteMessage = asyncHandler(async (req, res) => {
         const messageId = req.params.id;

@@ -11,13 +11,21 @@ class ChatMainScreen extends StatefulWidget {
 }
 
 class _ChatMainScreenState extends State<ChatMainScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
-    // Tự động kéo API danh sách hộp thư khi mở tab này
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatProvider>().fetchInbox();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -30,17 +38,15 @@ class _ChatMainScreenState extends State<ChatMainScreen> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
         ),
         backgroundColor: Colors.white,
-        elevation: 0.5, // Tạo một đường kẻ mờ dưới AppBar
+        elevation: 0.5,
         centerTitle: false,
       ),
       body: Consumer<ChatProvider>(
         builder: (context, provider, child) {
-          // Đang tải dữ liệu
           if (provider.isLoadingInbox) {
             return const Center(child: CircularProgressIndicator(color: Colors.green));
           }
 
-          // Nếu chưa có ai match
           if (provider.inbox.isEmpty) {
             return const Center(
               child: Column(
@@ -58,56 +64,152 @@ class _ChatMainScreenState extends State<ChatMainScreen> {
             );
           }
 
-          // Hiển thị danh sách người đã Match
-          return ListView.separated(
-            itemCount: provider.inbox.length,
-            separatorBuilder: (context, index) => const Divider(height: 1, indent: 76), // Kẻ vạch ngăn cách
-            itemBuilder: (context, index) {
-              final match = provider.inbox[index];
-              
-              // Format giờ đơn giản (VD: 14:05)
-              final timeString = "${match.updatedAt.hour.toString().padLeft(2, '0')}:${match.updatedAt.minute.toString().padLeft(2, '0')}";
+          // Lọc client-side theo tên bạn match
+          final filtered = _searchQuery.isEmpty
+              ? provider.inbox
+              : provider.inbox
+                  .where((m) => m.partnerName
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase()))
+                  .toList();
 
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                // Avatar người chat
-                leading: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: match.partnerAvatar.isNotEmpty 
-                      ? NetworkImage(match.partnerAvatar) 
-                      : null,
-                  child: match.partnerAvatar.isEmpty 
-                      ? const Icon(Icons.person, color: Colors.grey, size: 30) 
-                      : null,
-                ),
-                // Tên người chat
-                title: Text(
-                  match.partnerName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                // Tin nhắn cuối cùng (lời chào mời nếu chưa nhắn gì)
-                subtitle: Text(
-                  match.lastMessage.isNotEmpty ? match.lastMessage : 'Bắt đầu cuộc trò chuyện ngay!',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis, // Nếu dài quá thì hiện ...
-                  style: TextStyle(
-                    color: match.lastMessage.isEmpty ? Colors.green : Colors.grey[600],
-                    fontStyle: match.lastMessage.isEmpty ? FontStyle.italic : FontStyle.normal,
+          return Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  decoration: InputDecoration(
+                    hintText: 'Tìm kiếm bạn bè...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
                 ),
-                // Thời gian
-                trailing: Text(
-                  timeString,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                onTap: () {                 
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (_) => ChatDetailScreen(matchInfo: match)));
-                },
-              );
-            },
+              ),
+
+              // --- Danh sách ---
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Không tìm thấy "$_searchQuery"',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, indent: 76),
+                        itemBuilder: (context, index) {
+                          final match = filtered[index];
+                          final timeString =
+                              "${match.updatedAt.hour.toString().padLeft(2, '0')}:${match.updatedAt.minute.toString().padLeft(2, '0')}";
+
+                          return Dismissible(
+                            key: Key(match.id),
+                            direction: DismissDirection.endToStart, // Vuốt sang trái
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 24),
+                              color: Colors.red,
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_remove, color: Colors.white, size: 26),
+                                  SizedBox(height: 4),
+                                  Text('Hủy kết bạn',
+                                      style: TextStyle(color: Colors.white, fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            confirmDismiss: (_) async {
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Hủy tương hợp?'),
+                                  content: Text(
+                                      'Bạn có chắc muốn hủy kết bạn với ${match.partnerName}?\nTất cả tin nhắn sẽ bị xóa.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Huỷ'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                      child: const Text('Xóa', style: TextStyle(color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            onDismissed: (_) async {
+                              final success = await context.read<ChatProvider>().unmatch(match.id);
+                              if (!success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Hủy thất bại'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            child: ListTile(                              // ← Giữ nguyên ListTile cũ
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Colors.grey[200],
+                                backgroundImage: match.partnerAvatar.isNotEmpty
+                                    ? NetworkImage(match.partnerAvatar)
+                                    : null,
+                                child: match.partnerAvatar.isEmpty
+                                    ? const Icon(Icons.person, color: Colors.grey, size: 30)
+                                    : null,
+                              ),
+                              title: Text(
+                                match.partnerName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              subtitle: Text(
+                                match.lastMessage.isNotEmpty
+                                    ? match.lastMessage
+                                    : 'Bắt đầu cuộc trò chuyện ngay!',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: match.lastMessage.isEmpty ? Colors.green : Colors.grey[600],
+                                  fontStyle: match.lastMessage.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                ),
+                              ),
+                              trailing: Text(timeString,
+                                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => ChatDetailScreen(matchInfo: match)),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
       ),

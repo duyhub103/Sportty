@@ -89,6 +89,21 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> unmatch(String matchId) async {
+    try {
+      await _repository.unmatch(matchId);
+      // Xóa khỏi inbox ngay lập tức
+      _inbox.removeWhere((m) => m.id == matchId);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('Lỗi hủy tương hợp: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
+
   // kết nối SOCKET.IO
   void setupChatSocket(String matchId) {
     // Lấy socket xài chung của toàn App ra
