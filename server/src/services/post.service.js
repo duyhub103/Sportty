@@ -39,6 +39,11 @@ class PostService {
         return await postRepository.toggleLike(postId, userId);
     }
 
+    async getPostById(postId) {
+        return await postRepository.getPostById(postId);
+    }
+
+
     // Thêm comment
     async addComment(postId, userId, text) {
         if (!text || text.trim() === '') {
