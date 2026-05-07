@@ -407,9 +407,53 @@ class _TeamListScreenState extends State<TeamListScreen>
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
       subtitle: _buildTeamInfo(team),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Nút rời đội
+          IconButton(
+              icon: const Icon(Icons.exit_to_app, color: Colors.red, size: 22),
+              tooltip: 'Rời đội',
+              onPressed: () => _confirmLeaveTeam(team),
+            ),
+          const Icon(Icons.chevron_right, color: Colors.grey),
+        ],
+      ),
       onTap: () => _openTeamDetail(team.id),
     );
+  }
+
+  // Hộp thoại xác nhận rời đội
+  Future<void> _confirmLeaveTeam(TeamModel team) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rời đội?'),
+        content: Text('Bạn có chắc muốn rời khỏi "${team.name}" không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Huỷ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Rời đội', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirm != true || !mounted) return;
+    final provider = context.read<TeamProvider>();
+    final success = await provider.leaveTeam(team.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(success
+          ? 'Đã rời khỏi "${team.name}"'
+          : (provider.errorMessage ?? 'Lỗi rời đội')),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
   }
 
   Widget _buildExploreTeamTile(TeamModel team) {

@@ -363,6 +363,20 @@ class TeamProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> leaveTeam(String teamId) async {
+    try {
+      await _repository.leaveTeam(teamId);
+      // Xóa khỏi danh sách myTeams ngay lập tức (optimistic)
+      _myTeams.removeWhere((t) => t.id == teamId);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

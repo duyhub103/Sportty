@@ -107,4 +107,9 @@ class TeamService {
   Future<Response> getNotifications() async {
     return await ApiClient.dio.get('/notifications');
   }
+
+  // Rời khỏi đội
+  Future<Response> leaveTeam(String teamId) async {
+    return await ApiClient.dio.delete('/teams/$teamId/leave');
+  }
 }
