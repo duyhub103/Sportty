@@ -9,5 +9,6 @@ router.post('/messages', chatController.sendMessage);
 router.get('/matches', chatController.getMatches);
 router.get('/messages/:matchId', chatController.getMessages);
 router.delete('/messages/:id', chatController.deleteMessage);
+router.delete('/matches/:matchId', chatController.unmatch);
 
 module.exports = router;
