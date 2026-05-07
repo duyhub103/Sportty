@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/post_repository.dart';
+import '../../core/network/socket_client.dart';
+
 
 class PostProvider extends ChangeNotifier {
   final PostRepository _repository;
@@ -20,8 +22,44 @@ class PostProvider extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  bool _socketInitialized = false;
+
+  // Gọi 1 lần duy nhất khi user mở tab Bảng tin
+  void initSocketListeners() {
+    if (_socketInitialized) return;
+
+    final socket = SocketClient().socket;
+    if (socket == null) return;
+
+    _socketInitialized = true;
+    socket.on('post_updated', (data) {
+      try {
+        final updatedPost = PostModel.fromJson(Map<String, dynamic>.from(data));
+        final index = _posts.indexWhere((p) => p.id == updatedPost.id);
+        if (index != -1) {
+          _posts[index] = updatedPost;
+          notifyListeners();
+        }
+      } catch (e) {
+        print('Lỗi parse post_updated: $e');
+      }
+    });
+
+    print('✅ PostProvider: Đã đăng ký lắng nghe post_updated');
+  }
+
+
+  // Huỷ lắng nghe khi provider bị dispose (tránh memory leak)
+  @override
+  void dispose() {
+    SocketClient().socket?.off('post_updated');
+    super.dispose();
+  }
+
   // Lấy danh sách bài đăng (có phân trang + refresh)
   Future<void> fetchPosts({bool refresh = false}) async {
+    initSocketListeners();
+
     if (refresh) {
       _page = 1;
       _posts = [];

@@ -20,7 +20,9 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PostProvider>().fetchPosts(refresh: true);
+      final provider = context.read<PostProvider>();
+      provider.initSocketListeners(); // Kết nối real-time ngay khi mở feed
+      provider.fetchPosts(refresh: true);
     });
 
     // Lazy load khi cuộn xuống gần cuối
