@@ -92,6 +92,16 @@ class TeamRepository {
             { new: true } // Trả về data mới nhất sau khi sửa
         ).populate('captainId', 'fullName displayName avatar'); // Nhớ populate nếu DTO của bạn cần thông tin Captain
     }
+
+    // Xóa 1 member khỏi đội
+    async removeMember(teamId, userId) {
+        return await Team.findByIdAndUpdate(
+            teamId,
+            { $pull: { members: { userId: userId } } },
+            { new: true }
+        );
+    }
+
 }
 
 module.exports = new TeamRepository();

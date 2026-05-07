@@ -18,6 +18,7 @@ router.put('/:id/requests', teamController.handleJoinRequest); // Duyệt yêu c
 router.get('/:id/messages', teamController.getTeamMessages); // Lấy tin nhắn của đội
 router.put('/:id/fund', teamController.updateTeamFund);   // Thu - Chi quỹ đội
 router.put('/:id/avatar', uploadCloud.single('avatar'), teamController.updateTeamAvatar);
+router.delete('/:id/leave', teamController.leaveTeam);
 
 // Các route liên quan đến Bảng tin (Activities), đặt route này trong team.route vì nó có liên quan đến teamId
 router.post('/:id/activities', activityController.createActivity); // :id ở đây chính là teamId
