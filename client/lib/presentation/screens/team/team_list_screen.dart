@@ -18,7 +18,10 @@ class _TeamListScreenState extends State<TeamListScreen>
   late TabController _tabController;
 
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _myTeamSearchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  String _myTeamSearchQuery = '';
 
   String? _selectedSport;
 
@@ -62,6 +65,7 @@ class _TeamListScreenState extends State<TeamListScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _myTeamSearchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -197,18 +201,71 @@ class _TeamListScreenState extends State<TeamListScreen>
           );
         }
 
-        return RefreshIndicator(
-          color: Colors.green,
-          onRefresh: () => context.read<TeamProvider>().fetchMyTeams(),
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: provider.myTeams.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, indent: 76),
-            itemBuilder: (context, index) {
-              final team = provider.myTeams[index];
-              return _buildMyTeamTile(team);
-            },
-          ),
+        // Lọc client-side theo tên đội
+        final filtered = _myTeamSearchQuery.isEmpty
+            ? provider.myTeams
+            : provider.myTeams
+                .where((t) => t.name
+                    .toLowerCase()
+                    .contains(_myTeamSearchQuery.toLowerCase()))
+                .toList();
+
+        return Column(
+          children: [
+            //  Search Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+              child: TextField(
+                controller: _myTeamSearchController,
+                onChanged: (value) =>
+                    setState(() => _myTeamSearchQuery = value),
+                decoration: InputDecoration(
+                  hintText: 'Tìm trong đội của tôi...',
+                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  suffixIcon: _myTeamSearchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () {
+                            _myTeamSearchController.clear();
+                            setState(() => _myTeamSearchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                ),
+              ),
+            ),
+
+            // Danh sách 
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Không tìm thấy đội "$_myTeamSearchQuery"',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      color: Colors.green,
+                      onRefresh: () =>
+                          context.read<TeamProvider>().fetchMyTeams(),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, indent: 76),
+                        itemBuilder: (context, index) =>
+                            _buildMyTeamTile(filtered[index]),
+                      ),
+                    ),
+            ),
+          ],
         );
       },
     );
