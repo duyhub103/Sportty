@@ -133,7 +133,7 @@ class TeamRepository {
   }
 
   Future<bool> leaveTeam(String teamId) async {
-    final response = await _teamService.delete('/teams/$teamId/leave');
+    final response = await _teamService.leaveTeam(teamId);
     return response.data['success'] == true;
   }
 }

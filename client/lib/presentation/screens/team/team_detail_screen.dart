@@ -565,9 +565,51 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
     TeamProvider provider,
   ) {
     if (value == 'leave') {
-      Fluttertoast.showToast(msg: 'Chức năng đang phát triển');
+      _confirmLeaveTeam(context, provider);
     } else if (value == 'members') {
       _showPendingRequestsSheet(context, provider);
+    }
+  }
+  
+  Future<void> _confirmLeaveTeam(
+    BuildContext context,
+    TeamProvider provider,
+  ) async {
+    final team = provider.currentTeam;
+    if (team == null) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rời đội?'),
+        content: Text('Bạn có chắc muốn rời khỏi "${team.name}" không?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Huỷ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Rời đội', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final success = await provider.leaveTeam(team.id);
+    if (!mounted) return;
+    if (success) {
+      Fluttertoast.showToast(
+        msg: 'Đã rời khỏi "${team.name}"',
+        backgroundColor: Colors.green,
+      );
+      Navigator.pop(context); // Quay về màn hình trước (team list)
+    } else {
+      Fluttertoast.showToast(
+        msg: provider.errorMessage ?? 'Rời đội thất bại',
+        backgroundColor: Colors.red,
+      );
     }
   }
 

@@ -24,6 +24,11 @@ class ChatService {
     );
   }
 
+  // Hủy tương hợp
+  Future<Response> unmatch(String matchId) async {
+    return await ApiClient.dio.delete('/matches/$matchId');
+  }
+
   // Xóa tin nhắn
   Future<Response> deleteMessage(String messageId, String matchId, String type) async {
     return await ApiClient.dio.delete(

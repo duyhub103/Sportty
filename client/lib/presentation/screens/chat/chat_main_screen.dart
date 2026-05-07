@@ -122,48 +122,88 @@ class _ChatMainScreenState extends State<ChatMainScreen> {
                           final timeString =
                               "${match.updatedAt.hour.toString().padLeft(2, '0')}:${match.updatedAt.minute.toString().padLeft(2, '0')}";
 
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            leading: CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.grey[200],
-                              backgroundImage: match.partnerAvatar.isNotEmpty
-                                  ? NetworkImage(match.partnerAvatar)
-                                  : null,
-                              child: match.partnerAvatar.isEmpty
-                                  ? const Icon(Icons.person,
-                                      color: Colors.grey, size: 30)
-                                  : null,
-                            ),
-                            title: Text(
-                              match.partnerName,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              match.lastMessage.isNotEmpty
-                                  ? match.lastMessage
-                                  : 'Bắt đầu cuộc trò chuyện ngay!',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: match.lastMessage.isEmpty
-                                    ? Colors.green
-                                    : Colors.grey[600],
-                                fontStyle: match.lastMessage.isEmpty
-                                    ? FontStyle.italic
-                                    : FontStyle.normal,
+                          return Dismissible(
+                            key: Key(match.id),
+                            direction: DismissDirection.endToStart, // Vuốt sang trái
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 24),
+                              color: Colors.red,
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_remove, color: Colors.white, size: 26),
+                                  SizedBox(height: 4),
+                                  Text('Hủy kết bạn',
+                                      style: TextStyle(color: Colors.white, fontSize: 11)),
+                                ],
                               ),
                             ),
-                            trailing: Text(timeString,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 12)),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      ChatDetailScreen(matchInfo: match)),
+                            confirmDismiss: (_) async {
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Hủy tương hợp?'),
+                                  content: Text(
+                                      'Bạn có chắc muốn hủy kết bạn với ${match.partnerName}?\nTất cả tin nhắn sẽ bị xóa.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Huỷ'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                      child: const Text('Xóa', style: TextStyle(color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            onDismissed: (_) async {
+                              final success = await context.read<ChatProvider>().unmatch(match.id);
+                              if (!success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Hủy thất bại'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            child: ListTile(                              // ← Giữ nguyên ListTile cũ
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Colors.grey[200],
+                                backgroundImage: match.partnerAvatar.isNotEmpty
+                                    ? NetworkImage(match.partnerAvatar)
+                                    : null,
+                                child: match.partnerAvatar.isEmpty
+                                    ? const Icon(Icons.person, color: Colors.grey, size: 30)
+                                    : null,
+                              ),
+                              title: Text(
+                                match.partnerName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              subtitle: Text(
+                                match.lastMessage.isNotEmpty
+                                    ? match.lastMessage
+                                    : 'Bắt đầu cuộc trò chuyện ngay!',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: match.lastMessage.isEmpty ? Colors.green : Colors.grey[600],
+                                  fontStyle: match.lastMessage.isEmpty ? FontStyle.italic : FontStyle.normal,
+                                ),
+                              ),
+                              trailing: Text(timeString,
+                                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => ChatDetailScreen(matchInfo: match)),
+                              ),
                             ),
                           );
                         },

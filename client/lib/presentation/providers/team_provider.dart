@@ -350,6 +350,10 @@ class TeamProvider extends ChangeNotifier {
     socket.off('team_joined');
     socket.on('team_joined', (data) {
       fetchMyTeams();
+
+      if (currentTeam != null) {
+        fetchTeamDetail(currentTeam!.id);
+      }
     });
   }
 
