@@ -142,28 +142,37 @@ class TeamProvider extends ChangeNotifier {
   }
 
   // --- ACTIVITIES ---
-  Future<void> fetchActivities(String teamId, {bool refresh = false}) async {
-    if (refresh) {
-      _activitiesPage = 1;
-      _activities = [];
-      _hasMoreActivities = true;
-    }
-    if (!_hasMoreActivities) return;
+  bool _isLoadingActivities = false;
+    bool get isLoadingActivities => _isLoadingActivities;
 
-    try {
-      final result = await _repository.getActivities(teamId, page: _activitiesPage);
-      if (result.isEmpty) {
-        _hasMoreActivities = false;
-      } else {
-        _activities.addAll(result);
-        _activitiesPage++;
+    Future<void> fetchActivities(String teamId, {bool refresh = false}) async {
+      // Không cho nhiều request chạy cùng lúc
+      if (_isLoadingActivities && !refresh) return;
+
+      if (refresh) {
+        _activitiesPage = 1;
+        _activities = [];
+        _hasMoreActivities = true;
       }
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
+      if (!_hasMoreActivities) return;
+
+      _isLoadingActivities = true;
+      try {
+        final result = await _repository.getActivities(teamId, page: _activitiesPage);
+        if (result.isEmpty) {
+          _hasMoreActivities = false;
+        } else {
+          _activities.addAll(result);
+          _activitiesPage++;
+        }
+        notifyListeners();
+      } catch (e) {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        notifyListeners();
+      } finally {
+        _isLoadingActivities = false; // Luôn mở cờ sau khi xong
+      }
     }
-  }
 
   Future<bool> createActivity(
     String teamId,
