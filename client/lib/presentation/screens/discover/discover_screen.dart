@@ -17,32 +17,47 @@ class DiscoverScreen extends StatefulWidget {
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
   final CardSwiperController controller = CardSwiperController();
+  ProfileProvider? _profileProvider;
 
   @override
   void initState() {
     super.initState();
-    // Tự động kéo API khi mở tab Khám phá
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Lấy thông tin user hiện tại
-      final profile = context.read<ProfileProvider>().userProfile;
-      
-      // Check xem có tọa độ không rồi mới truyền vào
-      if (profile != null && profile.latitude != null && profile.longitude != null) {
-        context.read<DiscoverProvider>().fetchNearbyUsers(
-          profile.latitude!, 
-          profile.longitude!,
-          distance: 50, // Test khoảng cách xa
-        );
-      } else {
-        print("Chưa có tọa độ GPS của User");
-      }
+      _profileProvider = context.read<ProfileProvider>();
+      _profileProvider!.addListener(_onProfileChanged); // ← Lắng nghe profile thay đổi
+      _tryFetchNearbyUsers(); // Thử ngay lần đầu
     });
   }
+  
 
   @override
   void dispose() {
+    _profileProvider?.removeListener(_onProfileChanged);
     controller.dispose();
     super.dispose();
+  }
+
+  // Gọi lại mỗi khi ProfileProvider notify (profile vừa load xong)
+  void _onProfileChanged() {
+    _tryFetchNearbyUsers();
+  }
+
+  // Logic fetch — chỉ chạy khi có tọa độ và chưa có users
+  void _tryFetchNearbyUsers() {
+    if (!mounted) return;
+    final profile = context.read<ProfileProvider>().userProfile;
+    final discoverProvider = context.read<DiscoverProvider>();
+    if (profile != null &&
+        profile.latitude != null &&
+        profile.longitude != null &&
+        discoverProvider.users.isEmpty &&
+        !discoverProvider.isLoading) {
+      discoverProvider.fetchNearbyUsers(
+        profile.latitude!,
+        profile.longitude!,
+        distance: 50,
+      );
+    }
   }
 
   @override
