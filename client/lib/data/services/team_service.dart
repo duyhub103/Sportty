@@ -112,4 +112,13 @@ class TeamService {
   Future<Response> leaveTeam(String teamId) async {
     return await ApiClient.dio.delete('/teams/$teamId/leave');
   }
+
+  Future<Response> markNotificationAsRead(String notificationId) async {
+    return await ApiClient.dio.put('/notifications/$notificationId/read');
+  }
+
+  Future<Response> markAllNotificationsAsRead() async {
+    return await ApiClient.dio.put('/notifications/read-all');
+  }
+
 }

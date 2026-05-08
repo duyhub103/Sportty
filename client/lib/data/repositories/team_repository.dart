@@ -136,4 +136,12 @@ class TeamRepository {
     final response = await _teamService.leaveTeam(teamId);
     return response.data['success'] == true;
   }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    await _teamService.markNotificationAsRead(notificationId);
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    await _teamService.markAllNotificationsAsRead();
+  }
 }
