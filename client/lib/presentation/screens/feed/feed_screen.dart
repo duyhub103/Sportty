@@ -55,20 +55,10 @@ class _FeedScreenState extends State<FeedScreen> {
         title: const Text(
           'Bảng tin',
           style: TextStyle(
-            color: Colors.black87,
+            color: Colors.green,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.green, size: 28),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-            ),
-          ),
-        ],
       ),
       body: Consumer<PostProvider>(
         builder: (context, provider, _) {
@@ -132,14 +122,13 @@ class _FeedScreenState extends State<FeedScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
-        icon: const Icon(Icons.edit_outlined, color: Colors.white),
-        label: const Text('Đăng bài', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const CreatePostScreen()),
         ),
+         child: const Icon(Icons.edit_outlined, color: Colors.white),
       ),
     );
   }

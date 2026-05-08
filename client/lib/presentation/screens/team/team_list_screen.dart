@@ -128,7 +128,7 @@ class _TeamListScreenState extends State<TeamListScreen>
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Đội bóng',
+          'Đội',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.green,
@@ -137,16 +137,6 @@ class _TeamListScreenState extends State<TeamListScreen>
         backgroundColor: Colors.white,
         elevation: 0.5,
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle_outline,
-              color: Colors.green,
-              size: 28,
-            ),
-            onPressed: _openCreateTeamScreen,
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.green,
@@ -171,6 +161,11 @@ class _TeamListScreenState extends State<TeamListScreen>
             ],
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green,
+        onPressed: _openCreateTeamScreen,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

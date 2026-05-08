@@ -34,7 +34,7 @@ class _TeamFeedTabState extends State<TeamFeedTab> {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         final provider = context.read<TeamProvider>();
-        if (provider.hasMoreActivities) {
+        if (provider.hasMoreActivities && !provider.isLoadingActivities) {
           provider.fetchActivities(widget.team.id);
         }
       }

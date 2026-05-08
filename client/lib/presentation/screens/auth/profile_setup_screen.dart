@@ -20,8 +20,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _bioController = TextEditingController();
   // Khai báo danh sách các môn thể thao có sẵn
   final List<String> _availableSports = [
-    '⚽ Bóng đá', '🏃 Chạy bộ', '🏓 Bóng bàn', 
-    '🏸 Cầu lông', '🏀 Bóng rổ', '🏊 Bơi lội', '💪 Gym'
+    'Bóng đá', 'Chạy bộ', 'Bóng bàn', 
+    'Cầu lông', 'Bóng rổ', 'Bơi lội', 'Gym'
   ];
 
   // Mảng chứa các môn người dùng chọn

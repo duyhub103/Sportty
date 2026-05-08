@@ -66,7 +66,7 @@ class ActivityModel {
     }
 
     return ActivityModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       type: json['type'] ?? 'NOTICE',
       content: json['content'] ?? '',
       authorId: authorId,

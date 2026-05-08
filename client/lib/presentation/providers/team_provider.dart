@@ -142,28 +142,37 @@ class TeamProvider extends ChangeNotifier {
   }
 
   // --- ACTIVITIES ---
-  Future<void> fetchActivities(String teamId, {bool refresh = false}) async {
-    if (refresh) {
-      _activitiesPage = 1;
-      _activities = [];
-      _hasMoreActivities = true;
-    }
-    if (!_hasMoreActivities) return;
+  bool _isLoadingActivities = false;
+    bool get isLoadingActivities => _isLoadingActivities;
 
-    try {
-      final result = await _repository.getActivities(teamId, page: _activitiesPage);
-      if (result.isEmpty) {
-        _hasMoreActivities = false;
-      } else {
-        _activities.addAll(result);
-        _activitiesPage++;
+    Future<void> fetchActivities(String teamId, {bool refresh = false}) async {
+      // Không cho nhiều request chạy cùng lúc
+      if (_isLoadingActivities && !refresh) return;
+
+      if (refresh) {
+        _activitiesPage = 1;
+        _activities = [];
+        _hasMoreActivities = true;
       }
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
+      if (!_hasMoreActivities) return;
+
+      _isLoadingActivities = true;
+      try {
+        final result = await _repository.getActivities(teamId, page: _activitiesPage);
+        if (result.isEmpty) {
+          _hasMoreActivities = false;
+        } else {
+          _activities.addAll(result);
+          _activitiesPage++;
+        }
+        notifyListeners();
+      } catch (e) {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        notifyListeners();
+      } finally {
+        _isLoadingActivities = false; // Luôn mở cờ sau khi xong
+      }
     }
-  }
 
   Future<bool> createActivity(
     String teamId,
@@ -378,6 +387,50 @@ class TeamProvider extends ChangeNotifier {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
+    }
+  }
+
+  // Đánh dấu 1 thông báo là đã đọc
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await _repository.markNotificationAsRead(notificationId);
+      // Cập nhật local ngay (optimistic)
+      final index = _notifications.indexWhere((n) => n.id == notificationId);
+      if (index != -1) {
+        final old = _notifications[index];
+        _notifications[index] = NotificationModel(
+          id: old.id,
+          type: old.type,
+          content: old.content,
+          isRead: true, // ← Đổi thành đã đọc
+          createdAt: old.createdAt,
+          relatedId: old.relatedId,
+          sender: old.sender,
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Lỗi markAsRead: $e');
+    }
+  }
+
+  // Đánh dấu tất cả đã đọc
+  Future<void> markAllNotificationsAsRead() async {
+    try {
+      await _repository.markAllNotificationsAsRead();
+      // Optimistic update
+      _notifications = _notifications.map((n) => NotificationModel(
+        id: n.id,
+        type: n.type,
+        content: n.content,
+        isRead: true,
+        createdAt: n.createdAt,
+        relatedId: n.relatedId,
+        sender: n.sender,
+      )).toList();
+      notifyListeners();
+    } catch (e) {
+      print('Lỗi markAllAsRead: $e');
     }
   }
 
