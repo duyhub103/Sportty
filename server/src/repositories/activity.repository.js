@@ -1,8 +1,8 @@
-const TeamActivity = require('../models/TeamActivity'); // Cập nhật tên file model nếu cần
+const TeamActivity = require('../models/TeamActivity');
 
 class ActivityRepository {
     
-    // Tạo bài viết mới (Thông báo, Vote, Lịch đá)
+    // Tạo bài viết mới
     async createActivity(data) {
         const activity = await TeamActivity.create(data);
         // Tự động populate người tạo ngay sau khi đăng
@@ -12,19 +12,19 @@ class ActivityRepository {
     // Lấy danh sách Bảng tin của 1 đội
     async getActivitiesByTeam(teamId, skip = 0, limit = 10) {
         return await TeamActivity.find({ teamId })
-            .populate('createdBy', 'fullName displayName avatar') // Lấy người đăng
-            .populate('voteOptions.voters', 'fullName displayName avatar') // Lấy danh sách người đã vote
+            .populate('createdBy', 'fullName displayName avatar')
+            .populate('voteOptions.voters', 'fullName displayName avatar')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 }); // Bài mới nhất nổi lên đầu
+            .sort({ createdAt: -1 });
     }
 
-    // Lấy 1 bài viết cụ thể (Dùng nội bộ để xử lý logic khi có người bấm Vote)
+    // Lấy 1 bài viết cụ thể
     async getActivityById(activityId) {
         return await TeamActivity.findById(activityId);
     }
 
-    // Lưu lại sau khi thay đổi data trong RAM (Dùng cho logic Vote)
+    // Lưu lại sau khi thay đổi data trong RAM
     async saveActivity(activity) {
         return await activity.save();
     }

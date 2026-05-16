@@ -4,9 +4,7 @@ const notificationService = require('./notification.service');
 
 class ActivityService {
     
-    // Tạo bài viết mới trên Bảng tin
     async createActivity(teamId, userId, data, io) {
-        // Kiểm tra xem người đăng có phải là thành viên trong đội không
         const team = await teamRepository.getTeamById(teamId);
         if (!team) {
             const error = new Error('Team not found');
@@ -18,7 +16,6 @@ class ActivityService {
         // Lấy ID Đội trưởng
         const captainIdStr = team.captainId ? team.captainId.toString() : '';
 
-        // Chỉ cho phép Đội trưởng hoặc Đội phó đăng bài
         if (!isMember || (isMember.userId._id.toString() !== captainIdStr && isMember.role !== 'VICE_CAPTAIN')) {
              const error = new Error('Only Captain or Vice Captain can create activities');
              error.statusCode = 403;
@@ -31,14 +28,12 @@ class ActivityService {
             createdBy: userId,
             type: data.type.toUpperCase(),
             content: data.content,
-            voteOptions: [] // Mặc định là mảng rỗng
+            voteOptions: []
         };
 
         if (newActivityData.type === 'NOTICE') {
-            // Thông báo bình thường, không có Vote
             newActivityData.voteOptions = [];
         } else if (newActivityData.type === 'VOTE') {
-            // Lấy danh sách option do người dùng gửi lên
             if (!data.options || !Array.isArray(data.options) || data.options.length < 2) {
                 const error = new Error('VOTE must have at least 2 options');
                 error.statusCode = 400;
@@ -46,7 +41,6 @@ class ActivityService {
             }
             newActivityData.voteOptions = data.options.map(opt => ({ label: opt, voters: [] }));
         } else if (newActivityData.type === 'MATCH_SCHEDULE') {
-             // Tự động tạo 2 option: Có mặt / Vắng mặt
              newActivityData.voteOptions = [
                  { label: 'Có mặt', voters: [] },
                  { label: 'Vắng mặt', voters: [] }
@@ -57,20 +51,16 @@ class ActivityService {
             throw error;
         }
 
-        // thông báo
         if (io && (newActivityData.type === 'MATCH_SCHEDULE' || newActivityData.type === 'VOTE')) {
             try {
-                // Lặp qua danh sách thành viên đội
                 for (const member of team.members) {
-                    // Lấy ID thành viên (có thể là userId trực tiếp hoặc userId._id nếu đã populate)
                     const memberId = member.userId._id ? member.userId._id.toString() : member.userId.toString();
                     
-                    // Không tự gửi thông báo cho chính người đăng bài
                     if (memberId !== userId.toString()) {
                         await notificationService.createAndSendNotification({
                             recipientId: memberId,
                             senderId: userId,
-                            type: newActivityData.type, // Có thể là 'MATCH_SCHEDULE' hoặc 'VOTE'
+                            type: newActivityData.type, 
                             content: `Đội trưởng vừa tạo một ${newActivityData.type === 'VOTE' ? 'cuộc bình chọn' : 'lịch điểm danh'} mới trong đội ${team.name}. Vào xem ngay!`,
                             relatedId: team._id
                         }, io);
@@ -93,7 +83,7 @@ class ActivityService {
 
         // Emit real-time cho cả phòng team
         if (io) {
-            console.log('🟢 Emitting new_activity to room:', teamId.toString());
+            console.log('Emitting new_activity to room:', teamId.toString());
             io.to(teamId.toString()).emit('new_activity', new ActivityResponseDTO(populated));
         }
 
@@ -131,16 +121,12 @@ class ActivityService {
             throw error;
         }
 
-        // thay dổi lựa chọn của user (Bỏ vote ở option cũ nếu có, rồi thêm vào option mới)
-        // Quét xem user đã vote ở Option nào khác chưa? Nếu có thì xóa tên
         activity.voteOptions.forEach(opt => {
             opt.voters = opt.voters.filter(voterId => voterId.toString() !== userId.toString());
         });
 
-        // Thêm tên user vào Option mới vừa chọn
         targetOption.voters.push(userId);
 
-        // Lưu lại vào DB
         await activityRepository.saveActivity(activity);
 
         if (io) {
