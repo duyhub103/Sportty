@@ -21,17 +21,17 @@ const postRoutes = require('./routes/post.route');
 
 const app = express();
 
-app.use(helmet()); // bảo mật các header
-app.use(cors()); // cho phép truy cập api từ mọi nguồn 
-app.use(morgan('dev')); // log các request
+app.use(helmet()); 
+app.use(cors()); 
+app.use(morgan('dev')); 
 
 
 // parser
-app.use(express.json()); // đọc json từ body
-app.use(express.urlencoded({ extended: true })); // đọc dữ liệu từ form data
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 
-// Response Helper (trước Routes để controller dùng res.success)
+// Response Helper
 app.use(responseMiddleware);
 
 // Routes
@@ -45,9 +45,8 @@ app.use('/api/activities', activityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/posts', postRoutes);
 
-// Error Handling (cuối cùng)
+// Error Handling
 app.use(errorMiddleware);
 
-// import các route
 
 module.exports = app;
