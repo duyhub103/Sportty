@@ -13,8 +13,6 @@
 
 **Sportty** is a full-stack mobile application built with Flutter and Node.js. It connects sports enthusiasts by letting them discover nearby players, join amateur teams, and communicate in real time.
 
-> **Built as a portfolio project** demonstrating Clean Architecture, real-time communication, and REST API design in a cross-platform mobile environment.
-
 ---
 
 ## ✨ Features
